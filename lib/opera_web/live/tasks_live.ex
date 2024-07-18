@@ -37,9 +37,9 @@ defmodule OperaWeb.TasksLive do
     <a
       phx-click="select_task" phx-value-task-id={@task_id}
       href="#"
-      class="block max-w-sm my-2 p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+      class="block max-w-sm my-2 p-4 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
     >
-      <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+      <h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
       <%= @task_name %>
       </h5>
       <p class="font-normal text-gray-700 dark:text-gray-400">
@@ -53,7 +53,10 @@ defmodule OperaWeb.TasksLive do
     ~H"""
       <form :if={@current_task} phx-submit="complete_task" class="max-w-sm m-10">
         <div class="grid">
-          <.data_field :for={{name, value} <- @current_task.data} name={name} value={value}/>
+          <.input_field :for={{name, value} <- @current_task.data} name={name} value={value}/>
+        </div>
+        <div class="grid">
+          <.output_field :for={name <- @current_task.outputs} name={name} value=""/>
         </div>
         <button
           type="submit"
@@ -65,7 +68,7 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
-  def data_field(assigns) do
+  def input_field(assigns) do
     ~H"""
       <div class="mb-5">
           <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -82,12 +85,28 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
+  def output_field(assigns) do
+    ~H"""
+      <div class="mb-5">
+          <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <%= @name %>
+          </label>
+          <input
+            type="email"
+            id="email"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            value={@value}
+          />
+        </div>
+    """
+  end
+
   def handle_event("select_task", %{"task-id" => task_id}, socket) do
     task = Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
     {:noreply, assign(socket, current_task: task)}
   end
 
   def handle_event("complete_task", _, socket) do
-    
+
   end
 end
