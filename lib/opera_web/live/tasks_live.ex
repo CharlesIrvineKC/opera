@@ -51,7 +51,7 @@ defmodule OperaWeb.TasksLive do
 
   def task_form(assigns) do
     ~H"""
-      <form :if={@current_task} class="max-w-sm m-10">
+      <form :if={@current_task} phx-submit="complete_task" class="max-w-sm m-10">
         <div class="grid">
           <.data_field :for={{name, value} <- @current_task.data} name={name} value={value}/>
         </div>
@@ -85,5 +85,9 @@ defmodule OperaWeb.TasksLive do
   def handle_event("select_task", %{"task-id" => task_id}, socket) do
     task = Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
     {:noreply, assign(socket, current_task: task)}
+  end
+
+  def handle_event("complete_task", _, socket) do
+    
   end
 end
