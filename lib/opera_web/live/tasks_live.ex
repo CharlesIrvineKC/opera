@@ -15,7 +15,7 @@ defmodule OperaWeb.TasksLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-10 border border-black flex flex-row">
+    <div class="mx-10 flex flex-row">
       <div>
         <.user_task_ref
           :for={user_task <- @user_tasks}
@@ -37,7 +37,7 @@ defmodule OperaWeb.TasksLive do
     <a
       phx-click="select_task" phx-value-task-id={@task_id}
       href="#"
-      class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+      class="block max-w-sm my-2 p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
     >
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
       <%= @task_name %>
@@ -52,42 +52,8 @@ defmodule OperaWeb.TasksLive do
   def task_form(assigns) do
     ~H"""
       <form :if={@current_task} class="max-w-sm m-10">
-        <div class="mb-5">
-          <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            Your email
-          </label>
-          <input
-            type="email"
-            id="email"
-            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="name@flowbite.com"
-            required
-          />
-        </div>
-        <div class="mb-5">
-          <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            Your password
-          </label>
-          <input
-            type="password"
-            id="password"
-            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            required
-          />
-        </div>
-        <div class="flex items-start mb-5">
-          <div class="flex items-center h-5">
-            <input
-              id="remember"
-              type="checkbox"
-              value=""
-              class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"
-              required
-            />
-          </div>
-          <label for="remember" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-            Remember me
-          </label>
+        <div class="grid">
+          <.data_field :for={{name, value} <- @current_task.data} name={name} value={value}/>
         </div>
         <button
           type="submit"
@@ -96,6 +62,23 @@ defmodule OperaWeb.TasksLive do
           Submit
         </button>
       </form>
+    """
+  end
+
+  def data_field(assigns) do
+    ~H"""
+      <div class="mb-5">
+          <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <%= @name %>
+          </label>
+          <input
+            type="email"
+            id="email"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            value={@value}
+            disabled
+          />
+        </div>
     """
   end
 
