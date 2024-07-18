@@ -18,6 +18,8 @@ defmodule OperaWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/tasks", TasksLive
   end
 
   # Other scopes may use custom stacks.
