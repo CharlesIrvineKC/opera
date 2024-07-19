@@ -95,6 +95,7 @@ defmodule OperaWeb.TasksLive do
           </label>
           <input
             type="text"
+            name={@name}
             id="output"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             value={@value}
@@ -108,7 +109,12 @@ defmodule OperaWeb.TasksLive do
     {:noreply, assign(socket, current_task: task)}
   end
 
-  def handle_event("complete_task", _, socket) do
-
+  def handle_event("complete_task", data, socket) do
+    IO.inspect(data, label: "data")
+    task_uid = socket.assigns.current_task.uid
+    ProcessService.complete_user_task(task_uid, data)
+    Process.sleep(500)
+    user_tasks = ProcessService.get_user_tasks()
+    {:noreply, assign(socket, user_tasks: user_tasks)}
   end
 end

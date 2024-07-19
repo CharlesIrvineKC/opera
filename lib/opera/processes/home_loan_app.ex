@@ -3,10 +3,12 @@ defmodule Opera.Processes.HomeLoanApp do
   use Mozart.BpmProcess
 
   def pre_approved(data) do
+    IO.puts "** pre approved"
     data["Pre Approval"] == "true"
   end
 
   def pre_approval_declined(data) do
+    IO.puts "** pre approval declined"
    data["Pre Approval"] == "false"
   end
 
