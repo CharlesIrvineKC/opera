@@ -51,19 +51,21 @@ defmodule OperaWeb.TasksLive do
 
   def task_form(assigns) do
     ~H"""
-      <form :if={@current_task} phx-submit="complete_task" class="max-w-sm m-10">
-        <div class="grid">
+      <form :if={@current_task} phx-submit="complete_task" class="ml-8">
+        <div class="grid grid-cols-3 gap-6">
           <.input_field :for={{name, value} <- @current_task.data} name={name} value={value}/>
         </div>
-        <div class="grid">
+        <div class="grid grid-cols-3 gap-6 mb-8">
           <.output_field :for={name <- @current_task.outputs} name={name} value=""/>
         </div>
+        <div class="flex flex-col items-center">
         <button
           type="submit"
-          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         >
           Submit
         </button>
+        </div>
       </form>
     """
   end
@@ -71,13 +73,13 @@ defmodule OperaWeb.TasksLive do
   def input_field(assigns) do
     ~H"""
       <div class="mb-5">
-          <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          <label for="input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
             <%= @name %>
           </label>
           <input
-            type="email"
-            id="email"
-            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            type="text"
+            id="input"
+            class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             value={@value}
             disabled
           />
@@ -88,12 +90,12 @@ defmodule OperaWeb.TasksLive do
   def output_field(assigns) do
     ~H"""
       <div class="mb-5">
-          <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          <label for="output" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
             <%= @name %>
           </label>
           <input
-            type="email"
-            id="email"
+            type="text"
+            id="output"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             value={@value}
           />
