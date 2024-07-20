@@ -3,12 +3,10 @@ defmodule Opera.Processes.HomeLoanApp do
   use Mozart.BpmProcess
 
   def pre_approved(data) do
-    IO.puts "** pre approved"
     data["Pre Approval"] == "true"
   end
 
   def pre_approval_declined(data) do
-    IO.puts "** pre approval declined"
    data["Pre Approval"] == "false"
   end
 
@@ -28,11 +26,11 @@ defmodule Opera.Processes.HomeLoanApp do
 
 
 def loan_verified(data) do
-  data.loan_verified
+  data["Loan Verified"] == "true"
 end
 
 def loan_failed_verification(data) do
-  ! data.loan_verified
+  data["Loan Verified"] == "false"
 end
 
 defprocess "Perform Loan Evaluation Process" do
@@ -48,11 +46,11 @@ defprocess "Perform Loan Evaluation Process" do
 end
 
 def loan_approved(data) do
-  data.loan_approved
+  data["Loan Approved"] == "true"
 end
 
 def loan_declined(data) do
-  ! data.loan_approved
+  data["Loan Approved"] == "false"
 end
 
 defprocess "Route from Underwriting Process" do
