@@ -1,1 +1,0 @@
-Opera.Processes.HomeLoanApp.load()

@@ -20,6 +20,7 @@ defmodule OperaWeb.Router do
     get "/", PageController, :home
 
     live "/tasks", TasksLive
+    live "/processes", ProcessesLive
   end
 
   # Other scopes may use custom stacks.

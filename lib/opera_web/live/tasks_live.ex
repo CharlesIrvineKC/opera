@@ -20,7 +20,7 @@ defmodule OperaWeb.TasksLive do
 
   def render(assigns) do
     ~H"""
-    <.bottom_nav process_names={@process_names} />
+    <.nav process_names={@process_names} />
     <div class="mx-10 flex flex-row">
       <div>
         <.user_task_ref
@@ -38,7 +38,7 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
-  def bottom_nav(assigns) do
+  def nav(assigns) do
     ~H"""
     <nav class="mb-5 border border-black bg-gray-50 dark:bg-gray-700">
       <div class="max-w-screen-xl px-4 py-3 mx-auto">
