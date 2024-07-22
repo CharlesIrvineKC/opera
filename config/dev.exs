@@ -14,6 +14,9 @@ config :opera, Opera.Repo,
     {"HomeLoanApp", Opera.Processes.HomeLoanApp}
   ]
 
+  # config :opera, OperaWeb.Endpoint,
+  #   reloadable_apps: [:mozart]
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
