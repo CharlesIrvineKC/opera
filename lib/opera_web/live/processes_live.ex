@@ -7,16 +7,24 @@ defmodule OperaWeb.ProcessesLive do
   def mount(_params, _session, socket) do
     bpm_modules = Application.fetch_env!(:opera, :process_apps)
     process_pids = Map.values(ProcessService.get_active_processes())
-    process_states = Enum.map(process_pids, fn pid -> ProcessEngine.get_state(pid) end)
-    {:ok, assign(socket, bpm_modules: bpm_modules, active_processes: IO.inspect(process_states))}
+    active_processes = Enum.map(process_pids, fn pid -> ProcessEngine.get_state(pid) end)
+    view = nil
+    selected_process = nil
+
+    {:ok,
+     assign(socket,
+       bpm_modules: bpm_modules,
+       active_processes: active_processes,
+       view: view,
+       selected_process: selected_process
+     )}
   end
 
   def render(assigns) do
     ~H"""
-    <.nav bpm_modules={@bpm_modules} />
+    <.nav bpm_modules={@bpm_modules} active_processes={@active_processes} view={@view} />
     """
   end
-
 
   def nav(assigns) do
     ~H"""
@@ -105,6 +113,7 @@ defmodule OperaWeb.ProcessesLive do
                 >
                   <li>
                     <a
+                      phx-click="show-active-processes"
                       href="#"
                       class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                     >
@@ -118,10 +127,56 @@ defmodule OperaWeb.ProcessesLive do
         </div>
       </div>
     </nav>
-    <div classes="border border-black">
-    List of things here
-    </div>
+    <.process_instances active_processes={@active_processes} view={@view} />
     <.choose_application bpm_modules={@bpm_modules} />
+    """
+  end
+
+  def process_instances(assigns) do
+    ~H"""
+    <div :if={@view == :processes} class="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-6 py-3">
+              Process Name
+            </th>
+            <th scope="col" class="px-6 py-3">
+              Business Key
+            </th>
+            <th scope="col" class="px-6 py-3">
+              Start Time
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            :for={process <- @active_processes}
+            phx-click="show-tasks"
+            phx-value-process-id={process.uid}
+            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
+          >
+            <td class="px-6 py-4">
+              <%= process.model_name %>
+            </td>
+            <td class="px-6 py-4">
+              <%= process.process_key %>
+            </td>
+            <td class="px-6 py-4">
+              <%= process.start_time %>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <.tasks />
+    """
+  end
+
+  def tasks(assigns) do
+    ~H"""
+    Open Tasks
+    Completed Tasks
     """
   end
 
@@ -204,5 +259,14 @@ defmodule OperaWeb.ProcessesLive do
     module = Module.concat(Elixir, String.to_atom(module_name))
     apply(module, :load, [])
     {:noreply, socket}
+  end
+
+  def handle_event("show-tasks", %{"process-id" => process_uid}, socket) do
+    selected_process = Enum.find(socket.assigns.active_processes, fn ps -> ps.uid == process_uid end)
+    {:noreply, assign(socket, selected_process: IO.inspect(selected_process, label: "*** selected process **"))}
+  end
+
+  def handle_event("show-active-processes", _params, socket) do
+    {:noreply, assign(socket, view: :processes)}
   end
 end
