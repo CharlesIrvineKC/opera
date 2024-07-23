@@ -6,12 +6,12 @@ defmodule OperaWeb.TasksLive do
 
   def mount(_params, _session, socket) do
     user_tasks = ProcessService.get_user_tasks()
-    process_names = Enum.map(ProcessService.get_process_models(), fn {k, _v} -> k end)
+    bpm_applications = Enum.map(ProcessService.get_bpm_applications(), fn {_k,v} -> v end)
 
     socket =
       assign(socket,
         user_tasks: user_tasks,
-        process_names: process_names,
+        bpm_applications: bpm_applications,
         current_task: nil
       )
 
@@ -20,7 +20,7 @@ defmodule OperaWeb.TasksLive do
 
   def render(assigns) do
     ~H"""
-    <.nav process_names={@process_names} />
+    <.nav bpm_applications={@bpm_applications} />
     <div class="mx-10 flex flex-row">
       <div>
         <.user_task_ref
@@ -51,18 +51,18 @@ defmodule OperaWeb.TasksLive do
                 class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                 type="button"
               >
-                Start Process
+                Start BPM Application
               </button>
             </li>
           </ul>
         </div>
       </div>
     </nav>
-    <.choose_process process_names={@process_names} />
+    <.choose_bpm_application bpm_applications={@bpm_applications} />
     """
   end
 
-  def choose_process(assigns) do
+  def choose_bpm_application(assigns) do
     ~H"""
     <div
       id="process-start-modal"
@@ -76,7 +76,7 @@ defmodule OperaWeb.TasksLive do
           <!-- Modal header -->
           <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Start a Process
+              Start an Application
             </h3>
             <button
               type="button"
@@ -103,14 +103,14 @@ defmodule OperaWeb.TasksLive do
           </div>
           <!-- Modal body -->
           <div class="p-4 md:p-5">
-            <form phx-submit="start_process" class="max-w-sm mx-auto">
+            <form phx-submit="start_application" class="max-w-sm mx-auto">
               <select
-                id="process"
-                name="process"
+                id="app_name"
+                name="app_name"
                 class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               >
-                <option selected>Choose a process</option>
-                <option :for={name <- @process_names} value={name}><%= name %></option>
+                <option selected>Choose an application</option>
+                <option :for={app <- @bpm_applications} value={app.name}><%= app.name %></option>
               </select>
               <button
                 data-modal-hide="process-start-modal"
@@ -214,11 +214,12 @@ defmodule OperaWeb.TasksLive do
     {:noreply, assign(socket, user_tasks: user_tasks, current_task: nil)}
   end
 
-  def handle_event("start_process", %{"process" => process_name}, socket) do
+  def handle_event("start_application", %{"app_name" => application_name}, socket) do
     customer = %{"Name" => "Bob Dylan", "Income" => 5_000_000, "Debt" => 0}
+    application = Enum.find(socket.assigns.bpm_applications, fn app -> app.name == application_name end)
 
     {:ok, ppid, _uid, _key} =
-      ProcessEngine.start_process(process_name, customer, customer["Name"])
+      ProcessEngine.start_process(application.main, customer, customer["Name"])
 
     ProcessEngine.execute(ppid)
     Process.sleep(500)
