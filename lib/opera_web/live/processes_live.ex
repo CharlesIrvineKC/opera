@@ -3,6 +3,7 @@ defmodule OperaWeb.ProcessesLive do
 
   alias Mozart.ProcessService
   alias Mozart.ProcessEngine
+  alias Timex.Duration
 
   def mount(_params, _session, socket) do
     bpm_modules = Application.fetch_env!(:opera, :process_apps)
@@ -243,6 +244,9 @@ defmodule OperaWeb.ProcessesLive do
               <th scope="col" class="px-6 py-3">
                 Finish Time
               </th>
+              <th scope="col" class="px-6 py-3">
+                Duration
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -261,6 +265,9 @@ defmodule OperaWeb.ProcessesLive do
               </td>
               <td class="px-6 py-4">
                 <%= Timex.format!(task.finish_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
+              </td>
+              <td class="px-6 py-4">
+                <%= Duration.to_seconds(Duration.from_microseconds(task.duration), truncate: true) %> s
               </td>
             </tr>
           </tbody>
