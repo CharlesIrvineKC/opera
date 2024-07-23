@@ -22,7 +22,12 @@ defmodule OperaWeb.ProcessesLive do
 
   def render(assigns) do
     ~H"""
-    <.nav bpm_modules={@bpm_modules} active_processes={@active_processes} view={@view} />
+    <.nav
+      bpm_modules={@bpm_modules}
+      active_processes={@active_processes}
+      view={@view}
+      selected_process={@selected_process}
+    />
     """
   end
 
@@ -127,7 +132,11 @@ defmodule OperaWeb.ProcessesLive do
         </div>
       </div>
     </nav>
-    <.process_instances active_processes={@active_processes} view={@view} />
+    <.process_instances
+      active_processes={@active_processes}
+      view={@view}
+      selected_process={@selected_process}
+    />
     <.choose_application bpm_modules={@bpm_modules} />
     """
   end
@@ -135,6 +144,9 @@ defmodule OperaWeb.ProcessesLive do
   def process_instances(assigns) do
     ~H"""
     <div :if={@view == :processes} class="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <h1 class="mb-4 ml-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-xl dark:text-white">
+        Active Processes
+      </h1>
       <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
@@ -163,20 +175,98 @@ defmodule OperaWeb.ProcessesLive do
               <%= process.process_key %>
             </td>
             <td class="px-6 py-4">
-              <%= process.start_time %>
+              <%= Timex.format!(process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <.tasks />
+    <.tasks selected_process={@selected_process} />
     """
   end
 
   def tasks(assigns) do
     ~H"""
-    Open Tasks
-    Completed Tasks
+    <div :if={@selected_process}>
+      <h1 class="mb-4 ml-4 mt-4 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-xl dark:text-white">
+        Open Tasks
+      </h1>
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-6 py-3">
+                Task Name
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Task Type
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Start Time
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              :for={task <- Map.values(@selected_process.open_tasks)}
+              class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
+            >
+              <td class="px-6 py-4">
+                <%= task.name %>
+              </td>
+              <td class="px-6 py-4">
+                <%= task.type %>
+              </td>
+              <td class="px-6 py-4">
+                <%= Timex.format!(task.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h1 class="mb-4 ml-4 mt-4 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-xl dark:text-white">
+        Completed Tasks
+      </h1>
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-6 py-3">
+                Task Name
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Task Type
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Start Time
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Finish Time
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              :for={task <- @selected_process.completed_tasks}
+              class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
+            >
+              <td class="px-6 py-4">
+                <%= task.name %>
+              </td>
+              <td class="px-6 py-4">
+                <%= task.type %>
+              </td>
+              <td class="px-6 py-4">
+                <%= Timex.format!(task.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
+              </td>
+              <td class="px-6 py-4">
+                <%= Timex.format!(task.finish_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
     """
   end
 
@@ -262,11 +352,17 @@ defmodule OperaWeb.ProcessesLive do
   end
 
   def handle_event("show-tasks", %{"process-id" => process_uid}, socket) do
-    selected_process = Enum.find(socket.assigns.active_processes, fn ps -> ps.uid == process_uid end)
-    {:noreply, assign(socket, selected_process: IO.inspect(selected_process, label: "*** selected process **"))}
+    selected_process =
+      Enum.find(socket.assigns.active_processes, fn ps -> ps.uid == process_uid end)
+
+    {:noreply,
+     assign(socket,
+       selected_process: IO.inspect(selected_process, label: "*** selected process **")
+     )}
   end
 
   def handle_event("show-active-processes", _params, socket) do
+    IO.inspect(socket.assigns.active_processes, label: "*** Active Processes ***")
     {:noreply, assign(socket, view: :processes)}
   end
 end
