@@ -24,7 +24,6 @@ defmodule OperaWeb.TestLive do
   end
 
   def my_modal(assigns) do
-    IO.inspect(assigns, label: "** assigns **")
 
     ~H"""
     <.modal show={true} id="confirm">
@@ -34,7 +33,6 @@ defmodule OperaWeb.TestLive do
   end
 
   def handle_event("record-name", %{"name" => name}, socket) do
-    IO.inspect(name, label: "*** name in handle event **")
     {:noreply, assign(socket, selected_name: name, show_modal: true)}
   end
 end

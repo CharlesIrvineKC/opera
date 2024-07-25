@@ -364,12 +364,11 @@ defmodule OperaWeb.ProcessesLive do
 
     {:noreply,
      assign(socket,
-       selected_process: IO.inspect(selected_process, label: "*** selected process **")
+       selected_process: selected_process
      )}
   end
 
   def handle_event("show-active-processes", _params, socket) do
-    IO.inspect(socket.assigns.active_processes, label: "*** Active Processes ***")
     {:noreply, assign(socket, view: :processes)}
   end
 end
