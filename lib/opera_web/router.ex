@@ -21,6 +21,7 @@ defmodule OperaWeb.Router do
 
     live "/tasks", TasksLive
     live "/processes", ProcessesLive
+    live "/test", TestLive
   end
 
   # Other scopes may use custom stacks.
