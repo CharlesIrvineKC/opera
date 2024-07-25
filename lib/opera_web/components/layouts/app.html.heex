@@ -12,20 +12,18 @@
         data-dropdown-toggle="swithViewNavBar"
         class="flex items-center justify-between w-full py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent"
       >
-        
         <svg
-          class="w-2.5 h-2.5 ms-2.5"
-          aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
-          viewBox="0 0 10 6"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-6"
         >
           <path
-            stroke="currentColor"
             stroke-linecap="round"
             stroke-linejoin="round"
-            stroke-width="2"
-            d="m1 1 4 4 4-4"
+            d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3"
           />
         </svg>
       </button>
@@ -39,27 +37,21 @@
           aria-labelledby="dropdownLargeButton"
         >
           <li>
-            <.link 
+            <.link
               class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-              navigate={~p"/tasks"}>Tasks</.link>
-            <%!-- <a
-              href="/tasks"
-              class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+              navigate={~p"/tasks"}
             >
               Tasks
-            </a> --%>
+            </.link>
           </li>
         </ul>
         <div class="py-1">
-            <.link 
-              class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-              navigate={~p"/processes"}>Processes</.link>
-          <%!-- <a
-            href="/processes"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+          <.link
+            class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+            navigate={~p"/processes"}
           >
             Processes
-          </a> --%>
+          </.link>
         </div>
       </div>
       <div class="flex items-center space-x-6 rtl:space-x-reverse">
