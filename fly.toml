@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for opera-muddy-sea-7704 on 2024-07-25T16:05:01-05:00
+# fly.toml app configuration file generated for opera-late-darkness-5101 on 2024-07-25T16:15:23-05:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'opera-muddy-sea-7704'
+app = 'opera-late-darkness-5101'
 primary_region = 'dfw'
 kill_signal = 'SIGTERM'
 
@@ -13,7 +13,7 @@ kill_signal = 'SIGTERM'
   release_command = '/app/bin/migrate'
 
 [env]
-  PHX_HOST = 'opera-muddy-sea-7704.fly.dev'
+  PHX_HOST = 'opera-late-darkness-5101.fly.dev'
   PORT = '8080'
 
 [http_service]
