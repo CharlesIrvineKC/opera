@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for opera-late-darkness-5101 on 2024-07-25T16:15:23-05:00
+# fly.toml app configuration file generated for opera-bold-shadow-5932 on 2024-07-25T16:57:56-05:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'opera-late-darkness-5101'
+app = 'opera-bold-shadow-5932'
 primary_region = 'dfw'
 kill_signal = 'SIGTERM'
 
@@ -13,7 +13,7 @@ kill_signal = 'SIGTERM'
   release_command = '/app/bin/migrate'
 
 [env]
-  PHX_HOST = 'opera-late-darkness-5101.fly.dev'
+  PHX_HOST = 'opera-bold-shadow-5932.fly.dev'
   PORT = '8080'
 
 [http_service]
