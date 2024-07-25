@@ -28,7 +28,7 @@ defmodule OperaWeb.TasksLive do
           :for={user_task <- @user_tasks}
           task_name={user_task.name}
           task_id={user_task.uid}
-          process_key={user_task.process_key}
+          business_key={user_task.business_key}
         >
         </.user_task_ref>
       </div>
@@ -140,8 +140,8 @@ defmodule OperaWeb.TasksLive do
       <h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
         <%= @task_name %>
       </h5>
-      <p class="font-normal text-gray-700 dark:text-gray-400">
-        Business Key: <%= @process_key %>
+      <p class="font-normal text-sm text-gray-700 dark:text-gray-400">
+        Business Key: <%= @business_key %>
       </p>
     </a>
     """
@@ -238,13 +238,19 @@ defmodule OperaWeb.TasksLive do
   end
 
   def handle_event("start_app", data, socket) do
-    business_key_prefix = data["Business Key Prefix"]
-    process_key = unless business_key_prefix == "", do: business_key_prefix
-    data = Map.delete(data, "Business Key Prefix")
     application = socket.assigns.current_app
+    time = Timex.now() |> Timex.format!("{YYYY}-{0M}-{D}-{h24}-{m}-{s}")
+    business_key_prefix = data["Business Key Prefix"]
+    business_key =
+      if business_key_prefix == "" do
+        application.name <> "-" <> time
+      else
+        business_key_prefix <> "-" <> time
+      end
+    data = Map.delete(data, "Business Key Prefix")
 
     {:ok, ppid, _uid, _key} =
-      ProcessEngine.start_process(application.main, data, process_key)
+      ProcessEngine.start_process(application.main, data, business_key)
 
     ProcessEngine.execute(ppid)
     Process.sleep(500)

@@ -173,7 +173,7 @@ defmodule OperaWeb.ProcessesLive do
               <%= process.model_name %>
             </td>
             <td class="px-6 py-4">
-              <%= process.process_key %>
+              <%= process.business_key %>
             </td>
             <td class="px-6 py-4">
               <%= Timex.format!(process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
