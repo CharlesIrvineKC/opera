@@ -10,10 +10,6 @@ config :opera, Opera.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-  config :opera, :process_apps, [
-    {"HomeLoanApp", Opera.Processes.HomeLoanApp}
-  ]
-
   # config :opera, OperaWeb.Endpoint,
   #   reloadable_apps: [:mozart]
 

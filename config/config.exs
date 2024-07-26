@@ -11,6 +11,10 @@ config :opera,
   ecto_repos: [Opera.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+  config :opera, :process_apps, [
+    {"Process a Home Loan", Opera.Processes.HomeLoanApp}
+  ]
+
 # Configures the endpoint
 config :opera, OperaWeb.Endpoint,
   url: [host: "localhost"],
