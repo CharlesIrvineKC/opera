@@ -150,6 +150,7 @@ defmodule OperaWeb.TasksLive do
   def task_form(assigns) do
     ~H"""
     <form :if={@current_task} phx-submit="complete_task" class="ml-8">
+      <h3 class="text-3xl mb-4 font-bold dark:text-white"><%= @current_task.name %></h3>
       <div class="grid grid-cols-3 gap-6">
         <.input_field :for={{name, value} <- @current_task.data} name={name} value={value} />
       </div>
@@ -189,7 +190,7 @@ defmodule OperaWeb.TasksLive do
 
   def input_field(assigns) do
     ~H"""
-    <div class="mb-5">
+    <div>
       <label for="input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         <%= @name %>
       </label>
@@ -206,7 +207,7 @@ defmodule OperaWeb.TasksLive do
 
   def output_field(assigns) do
     ~H"""
-    <div class="mb-5">
+    <div class="mt-8">
       <label for="output" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         <%= @name %>
       </label>
@@ -224,17 +225,25 @@ defmodule OperaWeb.TasksLive do
   def handle_event("toggle_current_task", %{"task-id" => task_id}, socket) do
     current_task = socket.assigns.current_task
     current_task =
-      if current_task, do: nil, else: Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
+    if current_task == nil do
+        Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
+    else
+      unless current_task.uid == task_id do
+        Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
+      end
+    end
 
     {:noreply, assign(socket, current_task: current_task, current_app: nil)}
   end
 
   def handle_event("complete_task", data, socket) do
     task_uid = socket.assigns.current_task.uid
+    business_key = socket.assigns.current_task.business_key
     ProcessService.complete_user_task(task_uid, data)
-    Process.sleep(500)
+    Process.sleep(100)
     user_tasks = ProcessService.get_user_tasks()
-    {:noreply, assign(socket, user_tasks: user_tasks, current_task: nil)}
+    current_task = Enum.find(user_tasks, fn t -> t.business_key == business_key end)
+    {:noreply, assign(socket, user_tasks: user_tasks, current_task: current_task)}
   end
 
   def handle_event("start_app", data, socket) do
@@ -253,7 +262,7 @@ defmodule OperaWeb.TasksLive do
       ProcessEngine.start_process(application.main, data, business_key)
 
     ProcessEngine.execute(ppid)
-    Process.sleep(500)
+    Process.sleep(100)
     user_tasks = ProcessService.get_user_tasks()
     {:noreply, assign(socket, user_tasks: user_tasks, current_task: nil, current_app: nil)}
   end
