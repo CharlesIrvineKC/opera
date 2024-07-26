@@ -20,7 +20,7 @@ defmodule OperaWeb.OperaComponents do
 
   def output_field(assigns) do
     ~H"""
-    <div class="mt-8">
+    <div class="mt-2">
       <label for="output" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         <%= @name %>
       </label>

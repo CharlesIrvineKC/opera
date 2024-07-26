@@ -2,7 +2,7 @@ defmodule Opera.Processes.HomeLoanApp do
   @moduledoc false
   use Mozart.BpmProcess
 
-  def_bpm_application("Home Loan BPM Application", main: "Home Loan", data: "Customer Name,Income,Debt")
+  def_bpm_application("Home Loan Process", main: "Home Loan", data: "Customer Name,Income,Debt")
 
   def pre_approved(data) do
     data["Pre Approval"] == "true"

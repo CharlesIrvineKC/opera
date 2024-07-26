@@ -17,8 +17,7 @@ defmodule OperaWeb.Router do
   scope "/", OperaWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-
+    live "/", TasksLive
     live "/tasks", TasksLive
     live "/processes", ProcessesLive
     live "/test", TestLive

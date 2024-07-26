@@ -78,7 +78,7 @@ defmodule OperaWeb.ProcessesLive do
                       href="#"
                       class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                     >
-                      Load Application
+                      Deploy an Application
                     </a>
                   </li>
                 </ul>
@@ -310,7 +310,7 @@ defmodule OperaWeb.ProcessesLive do
           <!-- Modal header -->
           <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Load Application
+              Deploy a BPM Application
             </h3>
             <button
               type="button"
