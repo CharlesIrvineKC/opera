@@ -12,7 +12,8 @@ config :opera,
   generators: [timestamp_type: :utc_datetime]
 
   config :opera, :process_apps, [
-    {"Process a Home Loan", Opera.Processes.HomeLoanApp}
+    {"Process a Home Loan", Opera.Processes.HomeLoanApp},
+    {"Process one prototype process", Opera.Processes.OnePrototypeTaskApp}
   ]
 
 # Configures the endpoint
