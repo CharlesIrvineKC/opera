@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for opera-icy-wildflower-4681 on 2024-07-26T11:18:25-05:00
+# fly.toml app configuration file generated for opera-icy-wildflower-4681 on 2024-07-29T10:13:22-05:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -16,8 +16,8 @@ kill_signal = 'SIGTERM'
   PHX_HOST = 'opera-icy-wildflower-4681.fly.dev'
   PORT = '8080'
 
-[mounts]
-  source = "database"
+[[mounts]]
+  source = 'database'
   destination = '/database'
 
 [http_service]
