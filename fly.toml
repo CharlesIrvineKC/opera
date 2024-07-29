@@ -16,6 +16,10 @@ kill_signal = 'SIGTERM'
   PHX_HOST = 'opera-icy-wildflower-4681.fly.dev'
   PORT = '8080'
 
+[mounts]
+  source = "database"
+  destination = '/database'
+
 [http_service]
   internal_port = 8080
   force_https = true
