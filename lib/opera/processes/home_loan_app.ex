@@ -5,12 +5,16 @@ defmodule Opera.Processes.HomeLoanApp do
   def_bpm_application("Home Loan Process", main: "Home Loan", data: "Customer Name,Income,Debt")
 
   def pre_approved(data) do
-    data["Pre Approval"] == "true"
+    data["Pre Approval"] == "Approved"
   end
 
   def pre_approval_declined(data) do
-   data["Pre Approval"] == "false"
+   data["Pre Approval"] == "Declined"
   end
+
+  def_choice_type("Pre Approval", choices: "Approved, Declined")
+  def_choice_type("Loan Verified", choices: "Pass, Fail")
+  def_choice_type("Loan Approved", choices: "Approved, Declined")
 
   defprocess "Home Loan" do
     user_task("Perform Pre-Approval", groups: "credit", outputs: "Pre Approval")
@@ -28,11 +32,11 @@ defmodule Opera.Processes.HomeLoanApp do
 
 
 def loan_verified(data) do
-  data["Loan Verified"] == "true"
+  data["Loan Verified"] == "Pass"
 end
 
 def loan_failed_verification(data) do
-  data["Loan Verified"] == "false"
+  data["Loan Verified"] == "Fail"
 end
 
 defprocess "Perform Loan Evaluation Process" do
@@ -48,11 +52,11 @@ defprocess "Perform Loan Evaluation Process" do
 end
 
 def loan_approved(data) do
-  data["Loan Approved"] == "true"
+  data["Loan Approved"] == "Approved"
 end
 
 def loan_declined(data) do
-  data["Loan Approved"] == "false"
+  data["Loan Approved"] == "Declined"
 end
 
 defprocess "Route from Underwriting Process" do

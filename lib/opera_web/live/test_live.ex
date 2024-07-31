@@ -10,29 +10,32 @@ defmodule OperaWeb.TestLive do
 
   def render(assigns) do
     ~H"""
-    <button
-      :for={name <- @names}
-      phx-click="record-name"
-      phx-value-name={name}
-      type="button"
-      class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-    >
-      <%= name %>
-    </button>
-    <.my_modal selected_name={@selected_name} show_modal={@show_modal} />
+    <form class="max-w-sm mx-auto">
+      <div class="flex items-center mb-4">
+        <input
+          id="default-radio-1"
+          type="radio"
+          value=""
+          name="default-radio"
+          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        />
+        <label for="default-radio-1" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+          Default radio
+        </label>
+      </div>
+      <div class="flex items-center">
+        <input
+          id="default-radio-2"
+          type="radio"
+          value=""
+          name="default-radio"
+          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        />
+        <label for="default-radio-2" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+          Checked state
+        </label>
+      </div>
+    </form>
     """
-  end
-
-  def my_modal(assigns) do
-
-    ~H"""
-    <.modal show={true} id="confirm">
-      <%= @selected_name %>
-    </.modal>
-    """
-  end
-
-  def handle_event("record-name", %{"name" => name}, socket) do
-    {:noreply, assign(socket, selected_name: name, show_modal: true)}
   end
 end
