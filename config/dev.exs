@@ -10,6 +10,8 @@ config :opera, Opera.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+config :mozart, :database_path, "database"
+
   # config :opera, OperaWeb.Endpoint,
   #   reloadable_apps: [:mozart]
 
