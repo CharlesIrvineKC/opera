@@ -59,6 +59,10 @@ def loan_declined(data) do
   data["Loan Approved"] == "Declined"
 end
 
+def_choice_type("Communicate Loan Approved", choices: "By Phone, By US Mail")
+
+def_choice_type("Communicate Loan Denied", choices: "By Phone, By US Mail")
+
 defprocess "Route from Underwriting Process" do
   case_task "Route from Underwriting" do
     case_i :loan_approved do
