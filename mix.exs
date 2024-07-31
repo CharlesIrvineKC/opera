@@ -59,8 +59,8 @@ defmodule Opera.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
       {:timex, "~> 3.7"},
-      # {:mozart, path: "../mozart"},
-      {:mozart, "~> 0.5.7"}
+      {:mozart, path: "../mozart"},
+      # {:mozart, "~> 0.5.8"}
     ]
   end
 
