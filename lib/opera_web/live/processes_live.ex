@@ -352,8 +352,6 @@ defmodule OperaWeb.ProcessesLive do
   end
 
   def tasks(assigns) do
-    IO.inspect(assigns, label: "** assigns in tasks **")
-
     ~H"""
     <div :if={@selected_process}>
       <.open_tasks :if={@view == :active_processes} selected_process={@selected_process} />
@@ -457,6 +455,7 @@ defmodule OperaWeb.ProcessesLive do
       Enum.find(processes, fn ps -> ps.uid == process_uid end)
 
     {:noreply, assign(socket, selected_process: selected_process)}
+    {:noreply, redirect(socket, to: ~p"/processes/#{selected_process.uid}")}
   end
 
   def handle_event("show-active-processes", _params, socket) do

@@ -20,6 +20,8 @@ defmodule OperaWeb.Router do
     live "/", TasksLive
     live "/tasks", TasksLive
     live "/processes", ProcessesLive
+    live "/processes/:process_uid", ActiveProcessLive
+
     live "/test", TestLive
   end
 
