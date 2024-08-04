@@ -25,6 +25,7 @@ $ mix phx.server
 
 ## The Processes View
 
+
 After you have started Opera, the processes view will be available at:
 
 ```
