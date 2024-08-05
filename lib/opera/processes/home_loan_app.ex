@@ -25,7 +25,7 @@ defmodule Opera.Processes.HomeLoanApp do
         subprocess_task("Perform Loan Evaluation", model: "Perform Loan Evaluation Process")
       end
       case_i :pre_approval_declined do
-          user_task("Communicate Loan Denied", groups: "credit", outputs: "Loan Denied")
+          user_task("Communicate Loan Denied", groups: "credit", outputs: "Communicate Loan Denied")
       end
     end
   end
