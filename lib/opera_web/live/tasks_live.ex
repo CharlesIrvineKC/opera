@@ -174,7 +174,6 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <form :if={@current_app} phx-submit="start_app" class="ml-8">
       <div class="grid grid-cols-3 gap-6 mb-8">
-        <OC.output_field name="Business Key Prefix" value="" />
         <OC.output_field :for={field <- @current_app.data} name={field} value="" />
       </div>
       <div class="flex gap-2 flex-row">
@@ -216,14 +215,7 @@ defmodule OperaWeb.TasksLive do
   def handle_event("start_app", data, socket) do
     application = socket.assigns.current_app
     time = Timex.now() |> Timex.format!("{YYYY}-{0M}-{D}-{h24}-{m}-{s}")
-    business_key_prefix = data["Business Key Prefix"]
-    business_key =
-      if business_key_prefix == "" do
-        application.name <> "-" <> time
-      else
-        business_key_prefix <> "-" <> time
-      end
-    data = Map.delete(data, "Business Key Prefix")
+    business_key = get_business_key(data, application.bk_prefix) <> "-" <> time
 
     {:ok, ppid, _uid, _key} =
       ProcessEngine.start_process(application.main, data, business_key)
@@ -240,4 +232,8 @@ defmodule OperaWeb.TasksLive do
 
     {:noreply, assign(socket, current_task: nil, current_app: application)}
   end
+
+  defp get_business_key(_data, []), do: ""
+  defp get_business_key(data, [head]), do: data[head]
+  defp get_business_key(data, [head | rest]), do: data[head] <> "-" <> get_business_key(data, rest)
 end

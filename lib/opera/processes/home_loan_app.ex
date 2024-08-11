@@ -2,7 +2,11 @@ defmodule Opera.Processes.HomeLoanApp do
   @moduledoc false
   use Mozart.BpmProcess
 
-  def_bpm_application("Home Loan Process", main: "Home Loan", data: "Customer Name,Income,Debt")
+  def_bpm_application("Home Loan Process",
+    main: "Home Loan",
+    data: "First Name,Last Name,Income,Debt",
+    bk_prefix: "Last Name, First Name"
+  )
 
   def pre_approval_declined(data) do
     data["Pre Approval"] == "Declined"
@@ -15,7 +19,7 @@ defmodule Opera.Processes.HomeLoanApp do
   defprocess "Home Loan" do
     user_task("Perform Pre-Approval", groups: "credit", outputs: "Pre Approval")
 
-    exception_task "Pre-Approval Denied", :pre_approval_declined do
+    exception_task "Pre-Approval Denied", condition: :pre_approval_declined do
       user_task("Communicate Loan Denied", groups: "credit", outputs: "Communicate Loan Denied")
     end
 
@@ -29,7 +33,7 @@ defmodule Opera.Processes.HomeLoanApp do
   end
 
   defprocess "Perform Loan Evaluation Process" do
-    exception_task "Loan Failed Verification", :loan_failed_verification do
+    exception_task "Loan Failed Verification", condition: :loan_failed_verification do
       user_task("Communicate Loan Denied", groups: "credit", outputs: "Communicate Loan Denied")
     end
 
@@ -46,12 +50,13 @@ defmodule Opera.Processes.HomeLoanApp do
   def_choice_type("Communicate Loan Denied", choices: "By Phone, By US Mail")
 
   defprocess "Route from Underwriting Process" do
-    exception_task "Loan Declined", :loan_declined do
+    exception_task "Loan Declined", condition: :loan_declined do
       user_task("Communicate Loan Denied",
         groups: "customer_service",
         outputs: "Communicate Loan Denied"
       )
     end
+
     user_task("Communicate Approval", groups: "credit", outputs: "Communicate Loan Approved")
   end
 end
