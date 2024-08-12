@@ -24,7 +24,7 @@ defmodule OperaWeb.OperaComponents do
     type = PS.get_type(assigns.name)
     assigns = Map.put(assigns, :type, type)
     ~H"""
-    <div class="mt-6">
+    <div>
       <label for="output" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         <%= @name %>
       </label>

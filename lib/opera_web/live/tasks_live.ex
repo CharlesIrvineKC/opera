@@ -152,10 +152,10 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <form :if={@current_task} phx-submit="complete_task" class="ml-8">
       <h3 class="text-3xl mb-4 font-bold dark:text-white"><%= @current_task.name %></h3>
-      <div class="grid grid-cols-3 gap-6">
+      <div class="mb-6 grid grid-cols-3 gap-6">
         <OC.input_field :for={{name, value} <- @current_task.data} name={name} value={value} />
       </div>
-      <div class="grid grid-cols-3 gap-6 mb-8">
+      <div class="grid grid-cols-3 gap-6 mb-4">
         <OC.output_field :for={name <- @current_task.outputs} name={name} value="" />
       </div>
       <div class="flex gap-2 flex-row">
@@ -173,10 +173,10 @@ defmodule OperaWeb.TasksLive do
   def start_app_form(assigns) do
     ~H"""
     <form :if={@current_app} phx-submit="start_app" class="ml-8">
-      <div class="grid grid-cols-3 gap-6 mb-8">
+      <div class="grid grid-cols-3 gap-6 mb-4">
         <OC.output_field :for={field <- @current_app.data} name={field} value="" />
       </div>
-      <div class="flex gap-2 flex-row">
+      <div class="mt-8 flex gap-2 flex-row">
         <button
           type="submit"
           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
