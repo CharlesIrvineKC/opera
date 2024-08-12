@@ -19,7 +19,7 @@ defmodule Opera.Processes.HomeLoanApp do
   defprocess "Home Loan" do
     user_task("Perform Pre-Approval", groups: "credit", outputs: "Pre Approval")
 
-    exception_task "Pre-Approval Denied", condition: :pre_approval_declined do
+    reroute_task "Pre-Approval Denied", condition: :pre_approval_declined do
       user_task("Communicate Loan Denied", groups: "credit", outputs: "Communicate Loan Denied")
     end
 
@@ -33,7 +33,7 @@ defmodule Opera.Processes.HomeLoanApp do
   end
 
   defprocess "Perform Loan Evaluation Process" do
-    exception_task "Loan Failed Verification", condition: :loan_failed_verification do
+    reroute_task "Loan Failed Verification", condition: :loan_failed_verification do
       user_task("Communicate Loan Denied", groups: "credit", outputs: "Communicate Loan Denied")
     end
 
@@ -50,7 +50,7 @@ defmodule Opera.Processes.HomeLoanApp do
   def_choice_type("Communicate Loan Denied", choices: "By Phone, By US Mail")
 
   defprocess "Route from Underwriting Process" do
-    exception_task "Loan Declined", condition: :loan_declined do
+    reroute_task "Loan Declined", condition: :loan_declined do
       user_task("Communicate Loan Denied",
         groups: "customer_service",
         outputs: "Communicate Loan Denied"
