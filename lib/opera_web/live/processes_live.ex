@@ -4,7 +4,7 @@ defmodule OperaWeb.ProcessesLive do
   alias Mozart.ProcessService
   alias Mozart.ProcessEngine
 
-  def mount(_params, _session, socket) do
+  def mount(%{"view" => view}, _session, socket) do
     bpm_modules = Application.fetch_env!(:opera, :process_apps)
     process_pids = Map.values(ProcessService.get_active_processes())
     active_processes =
@@ -13,7 +13,6 @@ defmodule OperaWeb.ProcessesLive do
     completed_processes =
       ProcessService.get_completed_processes()
       |> Enum.filter(fn p -> p.parent_uid == nil end)
-    view = nil
     selected_process = nil
 
     {:ok,
@@ -216,7 +215,7 @@ defmodule OperaWeb.ProcessesLive do
 
   def completed_process_instances(assigns) do
     ~H"""
-    <div :if={@view == :completed_processes}>
+    <div :if={@view == "completed_processes"}>
       <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <h3 class="text-3xl ml-5 font-bold dark:text-white">Completed Processes</h3>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -259,7 +258,7 @@ defmodule OperaWeb.ProcessesLive do
 
   def active_process_instances(assigns) do
     ~H"""
-    <div :if={@view == :active_processes}>
+    <div :if={@view == "active_processes"}>
       <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <h3 class="text-3xl ml-5 font-bold dark:text-white">Active Processes</h3>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -390,7 +389,7 @@ defmodule OperaWeb.ProcessesLive do
     view = socket.assigns.view
 
     processes =
-      if view == :active_processes do
+      if view == "active_processes" do
         socket.assigns.active_processes
       else
         socket.assigns.completed_processes
@@ -403,10 +402,10 @@ defmodule OperaWeb.ProcessesLive do
   end
 
   def handle_event("show-active-processes", _params, socket) do
-    {:noreply, assign(socket, view: :active_processes)}
+    {:noreply, redirect(socket, to: ~p"/processes?view=active_processes")}
   end
 
   def handle_event("show-completed-processes", _params, socket) do
-    {:noreply, assign(socket, view: :completed_processes)}
+    {:noreply, redirect(socket, to: ~p"/processes?view=completed_processes")}
   end
 end
