@@ -4,15 +4,22 @@ defmodule OperaWeb.ProcessesLive do
   alias Mozart.ProcessService
   alias Mozart.ProcessEngine
 
-  def mount(%{"view" => view}, _session, socket) do
+  on_mount {OperaWeb.UserAuth, :ensure_authenticated}
+
+  def mount(params, session, socket) do
+    view = case params do %{"view" => view} -> view; _ -> nil end
+
     bpm_modules = Application.fetch_env!(:opera, :process_apps)
     process_pids = Map.values(ProcessService.get_active_processes())
+
     active_processes =
       Enum.map(process_pids, fn pid -> ProcessEngine.get_state(pid) end)
       |> Enum.filter(fn p -> p.parent_uid == nil end)
+
     completed_processes =
       ProcessService.get_completed_processes()
       |> Enum.filter(fn p -> p.parent_uid == nil end)
+
     selected_process = nil
 
     {:ok,
@@ -100,7 +107,6 @@ defmodule OperaWeb.ProcessesLive do
             </li>
           </ul>
 
-
           <ul class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
             <li>
               <button
@@ -156,9 +162,6 @@ defmodule OperaWeb.ProcessesLive do
               </div>
             </li>
           </ul>
-
-
-
 
           <ul class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
             <li>

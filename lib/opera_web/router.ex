@@ -18,14 +18,19 @@ defmodule OperaWeb.Router do
   end
 
   scope "/", OperaWeb do
-    pipe_through :browser
+    pipe_through [:browser, :require_authenticated_user]
 
-    live "/", TasksLive
     live "/tasks", TasksLive
     live "/processes", ProcessesLive
     live "/processes/:process_uid", ProcessLive
+  end
 
+  scope "/", OperaWeb do
+    pipe_through :browser
+
+    live "/", WelcomeLive
     live "/test", TestLive
+
   end
 
   # Other scopes may use custom stacks.

@@ -5,6 +5,8 @@ defmodule OperaWeb.TasksLive do
   alias Mozart.ProcessEngine
   alias OperaWeb.OperaComponents, as: OC
 
+  on_mount {OperaWeb.UserAuth, :ensure_authenticated}
+
   def mount(_params, _session, socket) do
     user_tasks = ProcessService.get_user_tasks()
     bpm_applications = Enum.map(ProcessService.get_bpm_applications(), fn {_k, v} -> v end)
