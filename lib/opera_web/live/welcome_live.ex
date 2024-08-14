@@ -9,10 +9,6 @@ defmodule OperaWeb.WelcomeLive do
     {:ok, assign(socket, page_title: "Welcome to Opera", user: user)}
   end
 
-  def handle_event("list-subjects", _, socket) do
-    {:noreply, redirect(socket, to: ~p"/subjects")}
-  end
-
   def render(assigns) do
     ~H"""
     <div class="mx-16">

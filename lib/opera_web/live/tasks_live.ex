@@ -3,20 +3,25 @@ defmodule OperaWeb.TasksLive do
 
   alias Mozart.ProcessService
   alias Mozart.ProcessEngine
+
   alias OperaWeb.OperaComponents, as: OC
+  alias Opera.Accounts
 
   on_mount {OperaWeb.UserAuth, :ensure_authenticated}
 
-  def mount(_params, _session, socket) do
+  def mount(_params, %{"user_token" => user_token}, socket) do
     user_tasks = ProcessService.get_user_tasks()
+    IO.inspect(user_tasks, label: "** user tasks **")
     bpm_applications = Enum.map(ProcessService.get_bpm_applications(), fn {_k, v} -> v end)
+    user = Accounts.get_user_by_session_token(user_token)
 
     socket =
       assign(socket,
         user_tasks: user_tasks,
         bpm_applications: bpm_applications,
         current_task: nil,
-        current_app: nil
+        current_app: nil,
+        user: user
       )
 
     {:ok, socket}
@@ -36,7 +41,7 @@ defmodule OperaWeb.TasksLive do
         </.user_task_ref>
       </div>
       <div>
-        <.task_form current_task={@current_task} />
+        <.task_form current_task={@current_task} user={@user} />
         <.start_app_form current_app={@current_app} />
       </div>
     </div>
@@ -144,7 +149,7 @@ defmodule OperaWeb.TasksLive do
         <%= @task_name %>
       </h5>
       <p class="font-normal text-sm text-gray-700 dark:text-gray-400">
-        Business Key: <%= @business_key %>
+        <%= @business_key %>
       </p>
     </a>
     """
@@ -153,14 +158,26 @@ defmodule OperaWeb.TasksLive do
   def task_form(assigns) do
     ~H"""
     <form :if={@current_task} phx-submit="complete_task" class="ml-8">
-      <h3 class="text-3xl mb-4 font-bold dark:text-white"><%= @current_task.name %></h3>
+      <h3 class="text-3xl mb-2 font-bold dark:text-white"><%= @current_task.name %></h3>
+      <div class="mb-4 flex justify-between">
+        <span><%= @current_task.business_key %></span>
+        <button
+          :if={@current_task.assigned_user == @user.email || @current_task.assigned_user == nil}
+          phx-click="toggle-claim"
+          phx-value-task-id={@current_task.uid}
+          type="button"
+          class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          <%= if @current_task.assigned_user == @user.email, do: "Release", else: "Claim" %>
+        </button>
+      </div>
       <div class="mb-6 grid grid-cols-3 gap-6">
         <OC.input_field :for={{name, value} <- @current_task.data} name={name} value={value} />
       </div>
       <div class="grid grid-cols-3 gap-6 mb-4">
         <OC.output_field :for={name <- @current_task.outputs} name={name} value="" />
       </div>
-      <div class="flex gap-2 flex-row">
+      <div :if={@current_task.assigned_user == @user.email} class="flex gap-2 flex-row">
         <button
           type="submit"
           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -190,16 +207,39 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
+  def handle_event("toggle-claim", %{"task-id" => task_id}, socket) do
+    task = Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
+
+    assignee =
+      cond do
+        task.assigned_user == socket.assigns.user.email ->
+          nil
+
+        task.assigned_user == nil ->
+          socket.assigns.user.email
+      end
+
+    ProcessService.assign_user_task(task_id, assignee)
+
+    task = Map.put(task, :assigned_user, assignee)
+
+    user_tasks =
+      Enum.map(socket.assigns.user_tasks, fn t -> if t.uid == task.uid, do: task, else: t end)
+
+    {:noreply, assign(socket, current_task: task, user_tasks: user_tasks)}
+  end
+
   def handle_event("toggle_current_task", %{"task-id" => task_id}, socket) do
     current_task = socket.assigns.current_task
+
     current_task =
-    if current_task == nil do
+      if current_task == nil do
         Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
-    else
-      unless current_task.uid == task_id do
-        Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
+      else
+        unless current_task.uid == task_id do
+          Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
+        end
       end
-    end
 
     {:noreply, assign(socket, current_task: current_task, current_app: nil)}
   end
@@ -237,5 +277,7 @@ defmodule OperaWeb.TasksLive do
 
   defp get_business_key(_data, []), do: ""
   defp get_business_key(data, [head]), do: data[head]
-  defp get_business_key(data, [head | rest]), do: data[head] <> "-" <> get_business_key(data, rest)
+
+  defp get_business_key(data, [head | rest]),
+    do: data[head] <> "-" <> get_business_key(data, rest)
 end

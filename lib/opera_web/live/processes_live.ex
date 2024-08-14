@@ -6,7 +6,7 @@ defmodule OperaWeb.ProcessesLive do
 
   on_mount {OperaWeb.UserAuth, :ensure_authenticated}
 
-  def mount(params, session, socket) do
+  def mount(params, _session, socket) do
     view = case params do %{"view" => view} -> view; _ -> nil end
 
     bpm_modules = Application.fetch_env!(:opera, :process_apps)
