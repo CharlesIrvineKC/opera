@@ -11,7 +11,6 @@ defmodule OperaWeb.TasksLive do
 
   def mount(_params, %{"user_token" => user_token}, socket) do
     user_tasks = ProcessService.get_user_tasks()
-    IO.inspect(user_tasks, label: "** user tasks **")
     bpm_applications = Enum.map(ProcessService.get_bpm_applications(), fn {_k, v} -> v end)
     user = Accounts.get_user_by_session_token(user_token)
 
@@ -245,7 +244,7 @@ defmodule OperaWeb.TasksLive do
   end
 
   def handle_event("complete_task", data, socket) do
-    task_uid = socket.assigns.current_task.uid
+        task_uid = socket.assigns.current_task.uid
     business_key = socket.assigns.current_task.business_key
     ProcessService.complete_user_task(task_uid, data)
     Process.sleep(100)
