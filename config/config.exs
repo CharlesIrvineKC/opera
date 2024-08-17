@@ -13,7 +13,8 @@ config :opera,
 
   config :opera, :process_apps, [
     {"Process a Home Loan", Opera.Processes.HomeLoanApp},
-    {"Prepare Bill", Opera.Processes.PrepareBillApp}
+    {"Prepare Bill", Opera.Processes.PrepareBillApp},
+    {"Payment Approval", Opera.Processes.PaymentApprovalApp}
   ]
 
 # Configures the endpoint
