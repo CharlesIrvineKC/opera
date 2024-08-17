@@ -1,8 +1,8 @@
 defmodule OperaWeb.TasksLive do
   use OperaWeb, :live_view
 
-  alias Mozart.ProcessService
-  alias Mozart.ProcessEngine
+  alias Mozart.ProcessService, as: PS
+  alias Mozart.ProcessEngine, as: PE
 
   alias OperaWeb.OperaComponents, as: OC
   alias Opera.Accounts
@@ -10,8 +10,8 @@ defmodule OperaWeb.TasksLive do
   on_mount {OperaWeb.UserAuth, :ensure_authenticated}
 
   def mount(_params, %{"user_token" => user_token}, socket) do
-    user_tasks = ProcessService.get_user_tasks()
-    bpm_applications = Enum.map(ProcessService.get_bpm_applications(), fn {_k, v} -> v end)
+    user_tasks = PS.get_user_tasks()
+    bpm_applications = Enum.map(PS.get_bpm_applications(), fn {_k, v} -> v end)
     user = Accounts.get_user_by_session_token(user_token)
 
     socket =
@@ -218,7 +218,7 @@ defmodule OperaWeb.TasksLive do
           socket.assigns.user.email
       end
 
-    ProcessService.assign_user_task(task_id, assignee)
+    PS.assign_user_task(task_id, assignee)
 
     task = Map.put(task, :assigned_user, assignee)
 
@@ -246,9 +246,9 @@ defmodule OperaWeb.TasksLive do
   def handle_event("complete_task", data, socket) do
         task_uid = socket.assigns.current_task.uid
     business_key = socket.assigns.current_task.business_key
-    ProcessService.complete_user_task(task_uid, data)
+    PS.complete_user_task(task_uid, data)
     Process.sleep(100)
-    user_tasks = ProcessService.get_user_tasks()
+    user_tasks = PS.get_user_tasks()
     current_task = Enum.find(user_tasks, fn t -> t.business_key == business_key end)
     {:noreply, assign(socket, user_tasks: user_tasks, current_task: current_task)}
   end
@@ -258,12 +258,14 @@ defmodule OperaWeb.TasksLive do
     time = Timex.now() |> Timex.format!("{YYYY}-{0M}-{D}-{h24}-{m}-{s}")
     business_key = get_business_key(data, application.bk_prefix) <> "-" <> time
 
-    {:ok, ppid, _uid, _key} =
-      ProcessEngine.start_process(application.main, data, business_key)
+    data = convert_number_types(data)
 
-    ProcessEngine.execute(ppid)
+    {:ok, ppid, _uid, _key} =
+      PE.start_process(application.main, data, business_key)
+
+    PE.execute(ppid)
     Process.sleep(100)
-    user_tasks = ProcessService.get_user_tasks()
+    user_tasks = PS.get_user_tasks()
     {:noreply, assign(socket, user_tasks: user_tasks, current_task: nil, current_app: nil)}
   end
 
@@ -272,6 +274,17 @@ defmodule OperaWeb.TasksLive do
       Enum.find(socket.assigns.bpm_applications, fn app -> app.name == application_name end)
 
     {:noreply, assign(socket, current_task: nil, current_app: application)}
+  end
+
+  def convert_number_types(data_map) do
+    Enum.reduce(data_map, %{}, fn {k,v}, acc ->
+      type = PS.get_type(k)
+      if type && type.type == :number do
+        Map.put(acc, k, String.to_integer(v))
+      else
+        Map.put(acc, k, v)
+      end
+    end)
   end
 
   defp get_business_key(_data, []), do: ""

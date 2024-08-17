@@ -17,6 +17,22 @@
         <li class="text-[0.8125rem] leading-6 text-zinc-900">
           <%= @current_user.email %>
         </li>
+        <li :if={@conn.request_path == "/processes"}>
+          <.link
+            href={~p"/tasks"}
+            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+          >
+            Tasks
+          </.link>
+        </li>
+        <li :if={@conn.request_path == "/tasks"}>
+          <.link
+            href={~p"/processes"}
+            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+          >
+            Processes
+          </.link>
+        </li>
         <li>
           <.link
             href={~p"/users/settings"}

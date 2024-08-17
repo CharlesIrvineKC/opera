@@ -30,6 +30,7 @@ defmodule OperaWeb.OperaComponents do
       </label>
       <.string_output_field :if={!@type} name={@name} value={@value}/>
       <.radio_output_field :if={@type && @type.type == :choice} choices={@type.choices} name={@name} />
+      <.integer_output_field :if={@type && @type.type == :number} name={@name} value={@value}/>
     </div>
     """
   end
@@ -58,6 +59,19 @@ defmodule OperaWeb.OperaComponents do
     ~H"""
     <input
       type="text"
+      name={@name}
+      required
+      id="output"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      value={@value}
+    />
+    """
+  end
+
+  def integer_output_field(assigns) do
+    ~H"""
+    <input
+      type="number"
       name={@name}
       required
       id="output"
