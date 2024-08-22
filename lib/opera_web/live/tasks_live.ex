@@ -174,7 +174,12 @@ defmodule OperaWeb.TasksLive do
         <OC.input_field :for={{name, value} <- @current_task.data} name={name} value={value} />
       </div>
       <div class="grid grid-cols-3 gap-6 mb-4">
-        <OC.output_field :for={name <- @current_task.outputs} name={name} value="" />
+        <OC.output_field
+          :for={name <- @current_task.outputs}
+          name={name}
+          enabled={@current_task.assigned_user}
+          value=""
+        />
       </div>
       <div :if={@current_task.assigned_user == @user.email} class="flex gap-2 flex-row">
         <button
@@ -192,7 +197,7 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <form :if={@current_app} phx-submit="start_app" class="ml-8">
       <div class="grid grid-cols-3 gap-6 mb-4">
-        <OC.output_field :for={field <- @current_app.data} name={field} value="" />
+        <OC.output_field :for={field <- @current_app.data} enabled={true} name={field} value="" />
       </div>
       <div class="mt-8 flex gap-2 flex-row">
         <button
@@ -244,7 +249,7 @@ defmodule OperaWeb.TasksLive do
   end
 
   def handle_event("complete_task", data, socket) do
-        task_uid = socket.assigns.current_task.uid
+    task_uid = socket.assigns.current_task.uid
     business_key = socket.assigns.current_task.business_key
     PS.complete_user_task(task_uid, data)
     Process.sleep(100)
@@ -277,8 +282,9 @@ defmodule OperaWeb.TasksLive do
   end
 
   def convert_number_types(data_map) do
-    Enum.reduce(data_map, %{}, fn {k,v}, acc ->
+    Enum.reduce(data_map, %{}, fn {k, v}, acc ->
       type = PS.get_type(k)
+
       if type && type.type == :number do
         Map.put(acc, k, String.to_integer(v))
       else

@@ -28,9 +28,19 @@ defmodule OperaWeb.OperaComponents do
       <label for="output" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         <%= @name %>
       </label>
-      <.string_output_field :if={!@type} name={@name} value={@value}/>
-      <.radio_output_field :if={@type && @type.type == :choice} choices={@type.choices} name={@name} />
-      <.integer_output_field :if={@type && @type.type == :number} name={@name} value={@value}/>
+      <.string_output_field :if={!@type} name={@name} enabled={@enabled} value={@value} />
+      <.radio_output_field
+        :if={@type && @type.type == :choice}
+        enabled={@enabled}
+        choices={@type.choices}
+        name={@name}
+      />
+      <.integer_output_field
+        :if={@type && @type.type == :number}
+        enabled={@enabled}
+        name={@name}
+        value={@value}
+      />
     </div>
     """
   end
@@ -45,6 +55,7 @@ defmodule OperaWeb.OperaComponents do
           value={choice}
           name={@name}
           required
+          disabled={!@enabled}
           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
         />
         <label for="default-radio-1" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -61,6 +72,7 @@ defmodule OperaWeb.OperaComponents do
       type="text"
       name={@name}
       required
+      disabled={!@enabled}
       id="output"
       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
       value={@value}
@@ -74,6 +86,7 @@ defmodule OperaWeb.OperaComponents do
       type="number"
       name={@name}
       required
+      disabled={!@enabled}
       id="output"
       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
       value={@value}
