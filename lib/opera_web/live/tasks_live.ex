@@ -36,6 +36,7 @@ defmodule OperaWeb.TasksLive do
           task_name={user_task.name}
           task_id={user_task.uid}
           business_key={user_task.business_key}
+          assignee={user_task.assigned_user}
         >
         </.user_task_ref>
       </div>
@@ -149,6 +150,9 @@ defmodule OperaWeb.TasksLive do
       </h5>
       <p class="font-normal text-sm text-gray-700 dark:text-gray-400">
         <%= @business_key %>
+      </p>
+      <p :if={@assignee} class="font-normal text-sm text-gray-700 dark:text-gray-400">
+        Assignee: <%= @assignee %>
       </p>
     </a>
     """
