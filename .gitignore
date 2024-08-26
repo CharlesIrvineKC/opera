@@ -27,6 +27,7 @@ erl_crash.dump
 /.github/
 Dockerfile
 fly.toml
+.DS_Store
 
 # Database files
 database

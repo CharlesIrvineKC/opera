@@ -14,7 +14,8 @@ config :opera,
   config :opera, :process_apps, [
     {"Process a Home Loan", Opera.Processes.HomeLoanApp},
     {"Prepare Bill", Opera.Processes.PrepareBillApp},
-    {"Payment Approval", Opera.Processes.PaymentApprovalApp}
+    {"Payment Approval", Opera.Processes.PaymentApprovalApp},
+    {"Process Invoice", Opera.Processes.InvoiceReceipt}
   ]
 
 # Configures the endpoint
