@@ -8,7 +8,7 @@ defmodule Opera.Processes.InvoiceReceipt do
   )
 
   def_choice_type("Invoice Approved?", choices: "Approved, Send to Review")
-  def_choice_type("Invoice Review Determination", choices: "Reject, Send to Approval")
+  def_choice_type("Invoice Review Determination", choices: "Rejected, Send to Approval")
 
   def invoice_approved(data) do
     data["Invoice Approved?"] == "Approved"
@@ -18,12 +18,13 @@ defmodule Opera.Processes.InvoiceReceipt do
     data["Invoice Approved?"] == "Send to Review"
   end
 
+  def invoice_not_rejected(data) do
+    data["Invoice Review Determination"] != "Rejected"
+  end
+
   def negotiation_not_resolved(data) do
-    IO.inspect(data, label: "** data in negotiation **")
-    result =
-    data["Invoice Review Determination"] != "Reject" &&
+    data["Invoice Review Determination"] != "Rejected" &&
     data["Invoice Approved?"] != "Approved"
-    IO.inspect(result, label: "** result of negotiation resolved")
   end
 
   defprocess "Invoice Receipt Process" do
@@ -51,7 +52,9 @@ defmodule Opera.Processes.InvoiceReceipt do
   defprocess "Perform Invoice Approval Negotiation" do
     repeat_task "Invoice Approval Negotiation", condition: :negotiation_not_resolved do
       user_task("Review Invoice", groups: "Admin", outputs: "Invoice Review Determination")
-      user_task("Reapprove Invoice", groups: "Admin", outputs: "Invoice Approved?")
+      conditional_task "Reapprove if not Rejected", condition: :invoice_not_rejected do
+        user_task("Reapprove Invoice", groups: "Admin", outputs: "Invoice Approved?")
+      end
     end
 
     conditional_task "Negotiation Result", condition: :invoice_approved do
