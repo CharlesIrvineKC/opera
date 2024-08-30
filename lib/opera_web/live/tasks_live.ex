@@ -164,15 +164,29 @@ defmodule OperaWeb.TasksLive do
       <h3 class="text-3xl mb-2 font-bold dark:text-white"><%= @current_task.name %></h3>
       <div class="mb-4 flex justify-between">
         <span><%= @current_task.business_key %></span>
-        <button
-          :if={@current_task.assigned_user == @user.email || @current_task.assigned_user == nil}
-          phx-click="toggle-claim"
-          phx-value-task-id={@current_task.uid}
-          type="button"
-          class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-        >
-          <%= if @current_task.assigned_user == @user.email, do: "Release", else: "Claim" %>
-        </button>
+        <div>
+          <button
+            phx-click="toggle-claim"
+            phx-value-task-id={@current_task.uid}
+            type="button"
+            class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <.link
+              href={~p"/processes/#{@current_task.process_uid}/?view=active_processes"}
+            >
+              History
+            </.link>
+          </button>
+          <button
+            :if={@current_task.assigned_user == @user.email || @current_task.assigned_user == nil}
+            phx-click="toggle-claim"
+            phx-value-task-id={@current_task.uid}
+            type="button"
+            class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <%= if @current_task.assigned_user == @user.email, do: "Release", else: "Claim" %>
+          </button>
+        </div>
       </div>
       <div class="mb-6 grid grid-cols-3 gap-6">
         <OC.input_field :for={{name, value} <- @current_task.data} name={name} value={value} />
