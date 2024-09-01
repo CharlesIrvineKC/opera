@@ -37,7 +37,7 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <.nav bpm_applications={@bpm_applications} />
     <div class="mx-10 flex flex-row">
-      <div class="mr-6">
+      <div class="min-w-80">
         <.user_task_ref
           :for={user_task <- @user_tasks}
           task_name={user_task.name}
@@ -193,10 +193,10 @@ defmodule OperaWeb.TasksLive do
           </button>
         </div>
       </div>
-      <div class="mb-6 grid grid-cols-3 gap-6">
+      <div class="flex flex-row flex-wrap gap-6 mb-8">
         <OC.input_field :for={{name, value} <- @current_task.data} name={name} value={value} />
       </div>
-      <div class="grid grid-cols-3 gap-6 mb-4">
+      <div class="flex flex-row flex-wrap gap-6 mb-8">
         <OC.output_field
           :for={name <- @current_task.outputs}
           name={name}
