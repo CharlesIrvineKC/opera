@@ -5,7 +5,7 @@ defmodule OperaWeb.OperaComponents do
 
   def input_field(assigns) do
     ~H"""
-    <div>
+    <div :if={@value} class="min-w-80">
       <label for="input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         <%= @name %>
       </label>
