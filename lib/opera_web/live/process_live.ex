@@ -199,7 +199,6 @@ defmodule OperaWeb.ProcessLive do
 
   def handle_event("select-task", %{"task-uid" => task_uid, "task-state" => task_state}, socket) do
     process = socket.assigns.selected_process
-    IO.puts("********")
 
     tasks =
       cond do
