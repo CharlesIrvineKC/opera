@@ -6,11 +6,11 @@ defmodule OperaWeb.ProcessLive do
   alias Mozart.ProcessService
   alias Timex.Duration
 
-  def mount(%{"process_uid" => process_uid, "view" => view}, _session, socket) do
+  def mount(%{"process_uid" => process_uid, "process_state" => process_state}, _session, socket) do
     process_pids = Map.values(ProcessService.get_active_processes())
 
     processes =
-      if view == "active_processes" do
+      if process_state == "active_processes" do
         Enum.map(process_pids, fn pid -> ProcessEngine.get_state(pid) end)
       else
         ProcessService.get_completed_processes()
@@ -18,7 +18,15 @@ defmodule OperaWeb.ProcessLive do
 
     selected_process = Enum.find(processes, fn ps -> ps.uid == process_uid end)
     subprocesses = Enum.filter(processes, fn p -> p.parent_uid == selected_process.uid end)
-    socket = assign(socket, selected_process: selected_process, subprocesses: subprocesses, view: view)
+
+    socket =
+      assign(socket,
+        selected_process: selected_process,
+        subprocesses: subprocesses,
+        process_state: process_state,
+        showing_task: nil
+      )
+
     {:ok, socket}
   end
 
@@ -27,8 +35,17 @@ defmodule OperaWeb.ProcessLive do
     <div class="ml-10">
       <.process_header selected_process={@selected_process} />
       <hr class="h-1 mx-auto my-4 bg-gray-200 border-0 rounded md:my-10 dark:bg-gray-700" />
-      <.subprocesses subprocesses={@subprocesses} view={@view}/>
-      <.tasks selected_process={@selected_process} />
+      <.subprocesses subprocesses={@subprocesses} process_state={@process_state} />
+      <.tasks
+        tasks={Map.values(@selected_process.open_tasks)}
+        task_state="open"
+        showing_task={@showing_task}
+      />
+      <.tasks
+        tasks={@selected_process.completed_tasks}
+        task_state="completed"
+        showing_task={@showing_task}
+      />
       <.process_data selected_process={@selected_process} />
     </div>
     """
@@ -97,10 +114,12 @@ defmodule OperaWeb.ProcessLive do
     """
   end
 
-  def open_tasks(assigns) do
+  def tasks(assigns) do
     ~H"""
-    <div :if={@selected_process.open_tasks != %{}}>
-      <h3 class="text-3xl mt-5 font-bold dark:text-white">Open Tasks</h3>
+    <div :if={@tasks != []}>
+      <h3 class="text-3xl mt-5 font-bold dark:text-white">
+        <%= if @task_state == "completed", do: "Completed ", else: "Open " %>Tasks
+      </h3>
       <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -114,58 +133,18 @@ defmodule OperaWeb.ProcessLive do
               <th scope="col" class="px-6 py-3">
                 Start Time
               </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              :for={task <- Map.values(@selected_process.open_tasks)}
-              class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
-            >
-              <td class="px-6 py-4">
-                <%= task.name %>
-              </td>
-              <td class="px-6 py-4">
-                <%= task.type %>
-              </td>
-              <td class="px-6 py-4">
-                <%= Timex.format!(task.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    """
-  end
-
-  def completed_tasks(assigns) do
-    ~H"""
-    <div :if={@completed_tasks != []}>
-      <h3 class="text-3xl mt-5 font-bold dark:text-white">Completed Tasks</h3>
-      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-              <th scope="col" class="px-6 py-3">
-                Task Name
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Task Type
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Start Time
-              </th>
-              <th scope="col" class="px-6 py-3">
+              <th :if={@task_state == "completed"} scope="col" class="px-6 py-3">
                 Finish Time
               </th>
-              <th scope="col" class="px-6 py-3">
+              <th :if={@task_state == "completed"} scope="col" class="px-6 py-3">
                 Duration
               </th>
             </tr>
           </thead>
           <tbody>
             <tr
-              :for={task <- @completed_tasks}
+              :for={task <- @tasks}
+              phx-click={show_modal("user_modal")}
               class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
             >
               <td class="px-6 py-4">
@@ -177,25 +156,21 @@ defmodule OperaWeb.ProcessLive do
               <td class="px-6 py-4">
                 <%= Timex.format!(task.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
               </td>
-              <td class="px-6 py-4">
+              <td :if={@task_state == "completed"} class="px-6 py-4">
                 <%= Timex.format!(task.finish_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
               </td>
-              <td class="px-6 py-4">
+              <td :if={@task_state == "completed"} class="px-6 py-4">
                 <%= Duration.to_seconds(Duration.from_microseconds(task.duration), truncate: true) %> s
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
-    """
-  end
-
-  def tasks(assigns) do
-    ~H"""
-    <div :if={@selected_process}>
-      <.open_tasks selected_process={@selected_process} />
-      <.completed_tasks completed_tasks={get_completed_tasks(@selected_process)} />
+      <.modal id="user-modal">
+        <h1>
+          Foobar
+        </h1>
+      </.modal>
     </div>
     """
   end
@@ -205,7 +180,22 @@ defmodule OperaWeb.ProcessLive do
   end
 
   def handle_event("show-subprocess", %{"process-id" => process_id}, socket) do
-    view = socket.assigns.view
-    {:noreply, redirect(socket, to: ~p"/processes/#{process_id}?view=#{view}")}
+    process_state = socket.assigns.process_state
+    {:noreply, redirect(socket, to: ~p"/processes/#{process_id}?process_state=#{process_state}")}
+  end
+
+  def handle_event("show-task", %{"task-uid" => task_uid, "task-state" => task_state}, socket) do
+    process = socket.assigns.selected_process
+    IO.puts("********")
+
+    tasks =
+      cond do
+        task_state == "open" -> Map.values(process.open_tasks)
+        task_state == "completed" -> process.completed_tasks
+      end
+
+    task = Enum.find(tasks, &(&1.uid == task_uid))
+
+    {:noreply, assign(socket, :showing_task, task)}
   end
 end

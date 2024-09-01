@@ -7,7 +7,7 @@ defmodule OperaWeb.ProcessesLive do
   on_mount {OperaWeb.UserAuth, :ensure_authenticated}
 
   def mount(params, _session, socket) do
-    view = case params do %{"view" => view} -> view; _ -> nil end
+    process_state = case params do %{"process_state" => process_state} -> process_state; _ -> nil end
 
     bpm_modules = Application.fetch_env!(:opera, :process_apps)
     process_pids = Map.values(ProcessService.get_active_processes())
@@ -27,7 +27,7 @@ defmodule OperaWeb.ProcessesLive do
        bpm_modules: bpm_modules,
        active_processes: active_processes,
        completed_processes: completed_processes,
-       view: view,
+       process_state: process_state,
        selected_process: selected_process
      )}
   end
@@ -39,17 +39,17 @@ defmodule OperaWeb.ProcessesLive do
       active_processes={@active_processes}
       completed_processes={@completed_processes}
       selected_process={@selected_process}
-      view={@view}
+      process_state={@process_state}
     />
     <.active_process_instances
       active_processes={@active_processes}
       selected_process={@selected_process}
-      view={@view}
+      process_state={@process_state}
     />
     <.completed_process_instances
       completed_processes={@completed_processes}
       selected_process={@selected_process}
-      view={@view}
+      process_state={@process_state}
     />
     """
   end
@@ -218,7 +218,7 @@ defmodule OperaWeb.ProcessesLive do
 
   def completed_process_instances(assigns) do
     ~H"""
-    <div :if={@view == "completed_processes"}>
+    <div :if={@process_state == "completed_processes"}>
       <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <h3 class="text-3xl ml-5 font-bold dark:text-white">Completed Processes</h3>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -261,7 +261,7 @@ defmodule OperaWeb.ProcessesLive do
 
   def active_process_instances(assigns) do
     ~H"""
-    <div :if={@view == "active_processes"}>
+    <div :if={@process_state == "active_processes"}>
       <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <h3 class="text-3xl ml-5 font-bold dark:text-white">Active Processes</h3>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -389,10 +389,10 @@ defmodule OperaWeb.ProcessesLive do
   end
 
   def handle_event("show-process", %{"process-id" => process_uid}, socket) do
-    view = socket.assigns.view
+    process_state = socket.assigns.process_state
 
     processes =
-      if view == "active_processes" do
+      if process_state == "active_processes" do
         socket.assigns.active_processes
       else
         socket.assigns.completed_processes
@@ -401,14 +401,14 @@ defmodule OperaWeb.ProcessesLive do
     selected_process =
       Enum.find(processes, fn ps -> ps.uid == process_uid end)
 
-    {:noreply, redirect(socket, to: ~p"/processes/#{selected_process.uid}?view=#{view}")}
+    {:noreply, redirect(socket, to: ~p"/processes/#{selected_process.uid}?process_state=#{process_state}")}
   end
 
   def handle_event("show-active-processes", _params, socket) do
-    {:noreply, redirect(socket, to: ~p"/processes?view=active_processes")}
+    {:noreply, redirect(socket, to: ~p"/processes?process_state=active_processes")}
   end
 
   def handle_event("show-completed-processes", _params, socket) do
-    {:noreply, redirect(socket, to: ~p"/processes?view=completed_processes")}
+    {:noreply, redirect(socket, to: ~p"/processes?process_state=completed_processes")}
   end
 end

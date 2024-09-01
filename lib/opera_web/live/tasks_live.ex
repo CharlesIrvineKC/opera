@@ -9,16 +9,23 @@ defmodule OperaWeb.TasksLive do
 
   on_mount {OperaWeb.UserAuth, :ensure_authenticated}
 
-  def mount(_params, %{"user_token" => user_token}, socket) do
+  def mount(params, %{"user_token" => user_token}, socket) do
+    task_uid =
+      case params do
+        %{"task-uid" => task_uid} -> task_uid
+        _ -> nil
+      end
+
     user_tasks = PS.get_user_tasks()
     bpm_applications = Enum.map(PS.get_bpm_applications(), fn {_k, v} -> v end)
     user = Accounts.get_user_by_session_token(user_token)
+    current_task = if task_uid, do: Enum.find(user_tasks, &(&1.uid == task_uid))
 
     socket =
       assign(socket,
         user_tasks: user_tasks,
         bpm_applications: bpm_applications,
-        current_task: nil,
+        current_task: current_task,
         current_app: nil,
         user: user
       )
@@ -171,9 +178,7 @@ defmodule OperaWeb.TasksLive do
             type="button"
             class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
-            <.link
-              href={~p"/processes/#{@current_task.process_uid}/?view=active_processes"}
-            >
+            <.link href={~p"/processes/#{@current_task.process_uid}/?process_state=active_processes"}>
               History
             </.link>
           </button>
