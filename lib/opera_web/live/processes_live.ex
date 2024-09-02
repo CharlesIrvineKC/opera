@@ -249,7 +249,7 @@ defmodule OperaWeb.ProcessesLive do
                 <%= process.business_key %>
               </td>
               <td class="px-6 py-4">
-                <%= Timex.format!(process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
+                <%= Timex.format!(process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}-{s}") %>
               </td>
             </tr>
           </tbody>
@@ -292,7 +292,7 @@ defmodule OperaWeb.ProcessesLive do
                 <%= process.business_key %>
               </td>
               <td class="px-6 py-4">
-                <%= Timex.format!(process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}") %>
+                <%= Timex.format!(process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}-{s}") %>
               </td>
             </tr>
           </tbody>
