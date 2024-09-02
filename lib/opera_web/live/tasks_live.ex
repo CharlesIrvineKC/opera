@@ -5,6 +5,7 @@ defmodule OperaWeb.TasksLive do
   alias Mozart.ProcessEngine, as: PE
 
   alias OperaWeb.OperaComponents, as: OC
+  alias OperaWeb.FormHelper, as: FH
   alias Opera.Accounts
 
   on_mount {OperaWeb.UserAuth, :ensure_authenticated}
@@ -194,7 +195,11 @@ defmodule OperaWeb.TasksLive do
         </div>
       </div>
       <div class="flex flex-row flex-wrap gap-6 mb-8">
-        <OC.input_field :for={{name, value} <- @current_task.data} name={name} value={value} />
+        <OC.input_field
+          :for={{name, value} <- FH.get_ordered_inputs(@current_task.module,@current_task.data)}
+          name={name}
+          value={value}
+        />
       </div>
       <div class="flex flex-row flex-wrap gap-6 mb-8">
         <OC.output_field
