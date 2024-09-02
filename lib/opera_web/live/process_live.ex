@@ -64,7 +64,6 @@ defmodule OperaWeb.ProcessLive do
   end
 
   def task_state(assigns) do
-    IO.inspect(assigns.selected_task, label: "*** task ***")
     ~H"""
     <div :if={@selected_task}>
       <h3 class="text-3xl mt-5 mb-5 font-bold dark:text-white">
