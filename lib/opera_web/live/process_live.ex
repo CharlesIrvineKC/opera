@@ -21,7 +21,7 @@ defmodule OperaWeb.ProcessLive do
     subprocesses = Enum.filter(processes, fn p -> p.business_key == selected_process.business_key end)
 
     open_tasks = Enum.map(subprocesses, fn p -> Map.values(p.open_tasks) end) |> List.flatten()
-    open_tasks = Enum.sort(open_tasks, &(Timex.before?(&1.finish_time, &2.finish_time)))
+    open_tasks = Enum.sort(open_tasks, &(Timex.before?(&1.start_time, &2.start_time)))
 
     visible_task_types = [:user, :prototype, :service, :timer, :rule, :receive]
     completed_tasks = Enum.map(subprocesses, & &1.completed_tasks) |> List.flatten()
@@ -64,6 +64,7 @@ defmodule OperaWeb.ProcessLive do
   end
 
   def task_state(assigns) do
+    IO.inspect(assigns.selected_task, label: "*** task ***")
     ~H"""
     <div :if={@selected_task}>
       <h3 class="text-3xl mt-5 mb-5 font-bold dark:text-white">
