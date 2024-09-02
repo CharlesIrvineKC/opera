@@ -3,9 +3,16 @@ defmodule OperaWeb.OperaComponents do
 
   alias Mozart.ProcessService, as: PS
 
+  def is_html_safe (value) do
+    case Phoenix.HTML.Safe.impl_for(value) do
+      nil -> false
+      _ -> true
+    end
+  end
+
   def input_field(assigns) do
     ~H"""
-    <div :if={@value} class="min-w-60">
+    <div :if={@value && is_html_safe(@value) } class="min-w-60">
       <label for="input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         <%= @name %>
       </label>
