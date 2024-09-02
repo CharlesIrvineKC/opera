@@ -11,8 +11,14 @@ defmodule OperaWeb.OperaComponents do
   end
 
   def input_field(assigns) do
+    assigns =
+      if is_html_safe(assigns.value) do
+        assigns
+      else
+        Map.put(assigns, :value, inspect(assigns.value))
+      end
     ~H"""
-    <div :if={@value && is_html_safe(@value) } class="min-w-60">
+    <div :if={@value} class="min-w-60">
       <label for="input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         <%= @name %>
       </label>
