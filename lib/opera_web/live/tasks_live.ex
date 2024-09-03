@@ -38,7 +38,7 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <.nav bpm_applications={@bpm_applications} />
     <div class="mx-10 flex flex-row">
-      <div class="min-w-80">
+      <div class="min-w-72">
         <.user_task_ref
           :for={user_task <- @user_tasks}
           task_name={user_task.name}

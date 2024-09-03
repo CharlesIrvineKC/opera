@@ -46,6 +46,10 @@ http://localhost:4000/processes
 
 You can also navigate to the processes view by clicking the **processes** link in the top left of the screen.
 
+When in this view, all process instances, both active and completed, are visible. 
+
+Click on any process to view the details of a process instance.
+
 ### Loading Process Models
 
 The **Processes View** allows you to load Mozart BPM application modules. See [Mozat documentation](https://hexdocs.pm/mozart/api-reference.html) on how to create a Mozart process models.
@@ -70,15 +74,6 @@ Applications >> Deploy an Application
 You can use this menu command to load the built in business process applications or one of your own. After you load a process application, you will be able to start process instances from the **tasks** view.
 
 After deploying the **HomeLoadApp** you may want to skip ahead to the **Task View** section to start and execution **HomeLoanApp** process instances.
-
-### Examining Active and Completed Processes
-
-After you have experimented with executing process models, use the following menu commands to examine your process instances:
-
-```
-Processes >> Active Processes
-Processes >> Completed Processes
-```
 
 ### Clearing All Process State
 
