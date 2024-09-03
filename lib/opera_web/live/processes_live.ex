@@ -19,10 +19,12 @@ defmodule OperaWeb.ProcessesLive do
     active_processes =
       Enum.map(process_pids, fn pid -> ProcessEngine.get_state(pid) end)
       |> Enum.filter(fn p -> p.parent_uid == nil end)
+      |> Enum.sort(&(Timex.before?(&1.start_time, &2.start_time)))
 
     completed_processes =
       ProcessService.get_completed_processes()
       |> Enum.filter(fn p -> p.parent_uid == nil end)
+      |> Enum.sort(&(Timex.before?(&1.start_time, &2.start_time)))
 
     selected_process = nil
 
