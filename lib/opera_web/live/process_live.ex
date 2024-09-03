@@ -10,7 +10,7 @@ defmodule OperaWeb.ProcessLive do
     process_pids = Map.values(ProcessService.get_active_processes())
 
     processes =
-      if process_state == "active_processes" do
+      if process_state == "active" do
         Enum.map(process_pids, fn pid -> ProcessEngine.get_state(pid) end)
       else
         ProcessService.get_completed_processes()
