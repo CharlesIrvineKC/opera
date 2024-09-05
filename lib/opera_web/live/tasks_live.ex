@@ -39,14 +39,7 @@ defmodule OperaWeb.TasksLive do
     <.nav bpm_applications={@bpm_applications} />
     <div class="mx-10 flex flex-row">
       <div class="min-w-72">
-        <.user_task_ref
-          :for={user_task <- @user_tasks}
-          task_name={user_task.name}
-          task_id={user_task.uid}
-          business_key={user_task.business_key}
-          assignee={user_task.assigned_user}
-        >
-        </.user_task_ref>
+        <.user_task_ref :for={user_task <- @user_tasks} task={user_task}></.user_task_ref>
       </div>
       <div>
         <.task_form current_task={@current_task} user={@user} />
@@ -149,18 +142,21 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <a
       phx-click="toggle_current_task"
-      phx-value-task-id={@task_id}
+      phx-value-task-id={@task.uid}
       href="#"
-      class="block max-w-sm my-2 p-4 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+      class="block max-w-sm my-1 p-4 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
     >
-      <h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
-        <%= @task_name %>
+      <h5 class="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+        <%= @task.top_level_model_name %>
+      </h5>
+      <h5 class="mb-2 text-md font-bold tracking-tight text-gray-900 dark:text-white">
+        <%= @task.name %>
       </h5>
       <p class="font-normal text-sm text-gray-700 dark:text-gray-400">
-        <%= @business_key %>
+        <%= @task.business_key %>
       </p>
-      <p :if={@assignee} class="font-normal text-sm text-gray-700 dark:text-gray-400">
-        Assignee: <%= @assignee %>
+      <p :if={@task.assigned_user} class="font-normal text-sm text-gray-700 dark:text-gray-400">
+        Assignee: <%= @task.assigned_user %>
       </p>
     </a>
     """
@@ -169,7 +165,9 @@ defmodule OperaWeb.TasksLive do
   def task_form(assigns) do
     ~H"""
     <form :if={@current_task} phx-submit="complete_task" class="ml-8">
-      <h3 class="text-3xl mb-2 font-bold dark:text-white"><%= @current_task.name %></h3>
+      <h3 class="text-3xl mb-2 font-bold dark:text-white">
+        <%= @current_task.name %> - <%= @current_task.top_level_model_name %>
+      </h3>
       <div class="mb-4 flex justify-between">
         <span><%= @current_task.business_key %></span>
         <div>
@@ -196,7 +194,7 @@ defmodule OperaWeb.TasksLive do
       </div>
       <div class="flex flex-row flex-wrap gap-6 mb-8">
         <OC.input_field
-          :for={{name, value} <- FH.get_ordered_inputs(@current_task.module,@current_task.data)}
+          :for={{name, value} <- FH.get_ordered_inputs(@current_task.module, @current_task.data)}
           name={name}
           value={value}
         />
