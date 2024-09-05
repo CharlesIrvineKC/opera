@@ -144,12 +144,12 @@ defmodule OperaWeb.TasksLive do
       phx-click="toggle_current_task"
       phx-value-task-id={@task.uid}
       href="#"
-      class="block max-w-sm my-1 p-4 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+      class="block max-w-sm p-2 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
     >
-      <h5 class="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+      <h5 class="text-md font-bold tracking-tight text-gray-900 dark:text-white">
         <%= @task.top_level_model_name %>
       </h5>
-      <h5 class="mb-2 text-md font-bold tracking-tight text-gray-900 dark:text-white">
+      <h5 class="mb-2 text-sm font-bold tracking-tight text-gray-900 dark:text-white">
         <%= @task.name %>
       </h5>
       <p class="font-normal text-sm text-gray-700 dark:text-gray-400">

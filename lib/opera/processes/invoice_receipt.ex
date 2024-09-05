@@ -2,7 +2,7 @@ defmodule Opera.Processes.InvoiceReceipt do
   use Mozart.BpmProcess
 
   def_bpm_application("Process Invoice",
-    main: "Invoice Receipt Process",
+    main: "Process Invoice Receipt",
     data: "First Name,Last Name",
     bk_prefix: "Last Name, First Name"
   )
@@ -27,7 +27,7 @@ defmodule Opera.Processes.InvoiceReceipt do
       data["Invoice Approved?"] != "Approved"
   end
 
-  defprocess "Invoice Receipt Process" do
+  defprocess "Process Invoice Receipt" do
     prototype_task("Assign Approver Group")
     user_task("Approve Invoice", groups: "Admin", outputs: "Invoice Approved?")
 
