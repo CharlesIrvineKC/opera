@@ -18,7 +18,10 @@ defmodule OperaWeb.TasksLive do
       end
 
     user_tasks = PS.get_user_tasks()
-    bpm_applications = Enum.map(PS.get_bpm_applications(), fn {_k, v} -> v end)
+
+    bpm_applications =
+      Enum.map(PS.get_bpm_applications(), fn {_k, v} -> v end)
+
     user = Accounts.get_user_by_session_token(user_token)
     current_task = if task_uid, do: Enum.find(user_tasks, &(&1.uid == task_uid))
 
@@ -223,7 +226,12 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <form :if={@current_app} phx-submit="start_app" class="ml-8">
       <div class="grid grid-cols-3 gap-6 mb-4">
-        <OC.output_field :for={field <- @current_app.data} enabled={true} name={field} value="" />
+        <OC.output_field
+          :for={field <- FH.get_ordered_outputs(@current_app.module, @current_app.data)}
+          enabled={true}
+          name={field}
+          value=""
+        />
       </div>
       <div class="mt-8 flex gap-2 flex-row">
         <button

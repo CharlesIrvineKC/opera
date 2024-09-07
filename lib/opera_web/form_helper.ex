@@ -9,8 +9,29 @@ defmodule OperaWeb.FormHelper do
     Opera.Processes.InvoiceReceipt => [
       "First Name",
       "Last Name"
+    ],
+    Opera.Processes.PaymentApprovalApp => [
+      "Customer Name",
+      "Payment Amount"
+    ],
+    Opera.Processes.PrepareBillApp => [
+      "Customer Name",
+      "amount"
     ]
   }
+
+  def get_ordered_outputs(module, outputs) do
+    ordering = @input_field_ordering[module]
+
+    if ordering do
+      ordered_outputs =
+        Enum.reduce(ordering, [], fn field, acc ->
+          if Enum.find(outputs, &(&1 == field)), do: acc ++ [field], else: acc
+        end)
+
+      ordered_outputs ++ (outputs -- ordered_outputs)
+    end
+  end
 
   def get_ordered_inputs(module, data) do
     ordering = @input_field_ordering[module]
