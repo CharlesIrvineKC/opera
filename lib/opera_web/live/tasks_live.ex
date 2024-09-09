@@ -41,7 +41,7 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <.nav bpm_applications={@bpm_applications} />
     <div class="mx-10 flex flex-row">
-      <div class="min-w-72">
+      <div class="mt-8 min-w-72">
         <.user_task_ref :for={user_task <- @user_tasks} task={user_task}></.user_task_ref>
       </div>
       <div>
@@ -54,26 +54,60 @@ defmodule OperaWeb.TasksLive do
 
   def nav(assigns) do
     ~H"""
-    <nav class="mb-5 bg-gray-50 dark:bg-gray-700">
-      <div class="max-w-screen-xl px-4 py-3 mx-auto">
-        <div class="flex items-center">
-          <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
-            <li>
-              <button
-                data-modal-target="process-start-modal"
-                data-modal-toggle="process-start-modal"
-                class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                type="button"
-              >
-                Start BPM Application
-              </button>
-            </li>
-          </ul>
-        </div>
+    <button
+      id="startBpmAppButton"
+      phx-click={JS.remove_class("hidden", to: "#dropdown")}
+      class="ml-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      type="button"
+    >
+      Start Business Process
+      <svg
+        class="w-2.5 h-2.5 ms-3"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 10 6"
+      >
+        <path
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="m1 1 4 4 4-4"
+        />
+      </svg>
+    </button>
+    <!-- Dropdown menu -->
+    <div class="relative ml-8">
+      <div
+        id="dropdown"
+        class="z-10 hidden absolute top-1 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700"
+      >
+        <ul
+          id="dropDownList"
+          class="py-2 text-sm text-gray-700 dark:text-gray-200"
+          aria-labelledby="startBpmAppButton"
+        >
+          <li :for={app <- @bpm_applications}>
+            <a
+              href="#"
+              phx-click={handle_select_app()}
+              phx-value-app-name={app.name}
+              class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+            >
+              <%= app.name %>
+            </a>
+          </li>
+        </ul>
       </div>
-    </nav>
-    <.choose_bpm_application bpm_applications={@bpm_applications} />
+    </div>
     """
+  end
+
+  def handle_select_app(js \\ %JS{}) do
+    js
+    |> JS.add_class("hidden", to: "#dropdown")
+    |> JS.push("set_current_app")
   end
 
   def choose_bpm_application(assigns) do
@@ -82,7 +116,7 @@ defmodule OperaWeb.TasksLive do
       id="process-start-modal"
       tabindex="-1"
       aria-hidden="true"
-      class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
+      class="hidden relative overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
     >
       <div class="relative p-4 w-full max-w-md max-h-full">
         <!-- Modal content -->
@@ -308,7 +342,7 @@ defmodule OperaWeb.TasksLive do
     {:noreply, assign(socket, user_tasks: user_tasks, current_task: nil, current_app: nil)}
   end
 
-  def handle_event("set_current_app", %{"app_name" => application_name}, socket) do
+  def handle_event("set_current_app", %{"app-name" => application_name}, socket) do
     application =
       Enum.find(socket.assigns.bpm_applications, fn app -> app.name == application_name end)
 
