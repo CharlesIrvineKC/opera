@@ -203,7 +203,7 @@ defmodule OperaWeb.TasksLive do
   def task_form(assigns) do
     ~H"""
     <form :if={@current_task} phx-submit="complete_task" class="ml-8">
-      <h3 class="text-3xl mb-2 font-bold dark:text-white">
+      <h3 class="text-2xl mb-2 font-bold dark:text-white">
         <%= @current_task.name %> - <%= @current_task.top_level_model_name %>
       </h3>
       <div class="mb-4 flex justify-between">
