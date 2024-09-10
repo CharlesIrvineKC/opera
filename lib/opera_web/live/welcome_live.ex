@@ -48,9 +48,12 @@ defmodule OperaWeb.WelcomeLive do
               When logged in, a <b>Tasks</b>
               link should be visible at the right top of your browser window. Click on this link to expose the <b>Opera Task View</b>.
               <br /><br />
-              <p>From this window, you can:</p>
+              <p><b>From this window, you can:</b></p>
               <ul class="max-w-md space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
                 <li>Start Business Processes</li>
+                <li>Claim a User Task</li>
+                <li>Release (Unclaim) a User Task</li>
+                <li>View the Task's Process History</li>
                 <li>Complete User Tasks</li>
               </ul>
             </p>
@@ -68,7 +71,7 @@ defmodule OperaWeb.WelcomeLive do
               When logged in, a <b>Processes</b>
               link should be visible at the right top of your browser window. Click on this link to expose the <b>Opera Processes View</b>.
               <br /><br />
-              <p>From this window, you can:</p>
+              <p><b>From this window, you can:</b></p>
               <ul class="max-w-md space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
                 <li>Load Process Applications</li>
                 <li>View Active Processes</li>
