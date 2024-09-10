@@ -13,7 +13,7 @@ defmodule OperaWeb.TasksLive do
   def mount(params, %{"user_token" => user_token}, socket) do
     task_uid =
       case params do
-        %{"task-uid" => task_uid} -> task_uid
+        %{"task_uid" => task_uid} -> task_uid
         _ -> nil
       end
 
@@ -314,7 +314,12 @@ defmodule OperaWeb.TasksLive do
         end
       end
 
-    {:noreply, assign(socket, current_task: current_task, current_app: nil)}
+    if current_task do
+      {:noreply, redirect(socket, to: ~p"/tasks/#{current_task.uid}")}
+    else
+      {:noreply, redirect(socket, to: ~p"/tasks")}
+    end
+
   end
 
   def handle_event("complete_task", data, socket) do

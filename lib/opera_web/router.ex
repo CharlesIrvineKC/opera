@@ -21,6 +21,7 @@ defmodule OperaWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live "/tasks", TasksLive
+    live "/tasks/:task_uid", TasksLive
     live "/processes", ProcessesLive
     live "/processes/:process_uid", ProcessLive
   end
