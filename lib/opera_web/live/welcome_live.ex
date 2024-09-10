@@ -53,8 +53,8 @@ defmodule OperaWeb.WelcomeLive do
                 <li>Start Business Processes</li>
                 <li>Claim a User Task</li>
                 <li>Release (Unclaim) a User Task</li>
-                <li>View the Task's Process History</li>
-                <li>Complete User Tasks</li>
+                <li>View a Task's Process History</li>
+                <li>Complete a User Task <em>(You must claim it first.)</em></li>
               </ul>
             </p>
           </a>
