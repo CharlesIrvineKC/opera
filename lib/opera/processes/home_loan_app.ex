@@ -17,14 +17,14 @@ defmodule Opera.Processes.HomeLoanApp do
   def_choice_type("Loan Approved", choices: "Approved, Declined")
 
   defprocess "Home Loan" do
-    user_task("Perform Pre-Approval", groups: "credit", outputs: "Pre Approval")
+    user_task("Perform Pre-Approval", group: "Credit", outputs: "Pre Approval")
 
     reroute_task "Pre-Approval Denied", condition: :pre_approval_declined do
-      user_task("Communicate Loan Denied", groups: "credit", outputs: "Communicate Loan Denied")
+      user_task("Communicate Loan Denied", group: "Credit", outputs: "Communicate Loan Denied")
     end
 
-    user_task("Receive Mortage Application", groups: "credit", outputs: "Purchase Price")
-    user_task("Process Loan", groups: "credit", outputs: "Loan Verified")
+    user_task("Receive Mortage Application", group: "Credit", outputs: "Purchase Price")
+    user_task("Process Loan", group: "Credit", outputs: "Loan Verified")
     subprocess_task("Perform Loan Evaluation", model: "Perform Loan Evaluation Process")
   end
 
@@ -34,10 +34,10 @@ defmodule Opera.Processes.HomeLoanApp do
 
   defprocess "Perform Loan Evaluation Process" do
     reroute_task "Loan Failed Verification", condition: :loan_failed_verification do
-      user_task("Communicate Loan Denied", groups: "credit", outputs: "Communicate Loan Denied")
+      user_task("Communicate Loan Denied", group: "Credit", outputs: "Communicate Loan Denied")
     end
 
-    user_task("Perform Underwriting", groups: "underwriting", outputs: "Loan Approved")
+    user_task("Perform Underwriting", group: "Underwriting", outputs: "Loan Approved")
     subprocess_task("Route from Underwriting", model: "Route from Underwriting Process")
   end
 
@@ -52,11 +52,11 @@ defmodule Opera.Processes.HomeLoanApp do
   defprocess "Route from Underwriting Process" do
     reroute_task "Loan Declined", condition: :loan_declined do
       user_task("Communicate Loan Denied",
-        groups: "customer_service",
+        group: "Customer Service",
         outputs: "Communicate Loan Denied"
       )
     end
 
-    user_task("Communicate Approval", groups: "credit", outputs: "Communicate Loan Approved")
+    user_task("Communicate Approval", group: "Credit", outputs: "Communicate Loan Approved")
   end
 end

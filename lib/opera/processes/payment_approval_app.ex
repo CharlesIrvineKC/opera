@@ -21,12 +21,12 @@ defmodule Opera.Processes.PaymentApprovalApp do
   end
 
   defprocess "Payment Approval Process" do
-    user_task("Submit For Approval", groups: "Accounts Payable", outputs: "Ready for Approval")
-    user_task("Approve Payment (level one)", groups: "Management", outputs: "Loan Approved (level one)")
+    user_task("Submit For Approval", group: "Accounts Payable", outputs: "Ready for Approval")
+    user_task("Approve Payment (level one)", group: "Management", outputs: "Loan Approved (level one)")
     reroute_task "Level One Approval Declined", condition: :level_one_approval_declined do
       prototype_task("Handle Level One Approval Declined")
     end
-    user_task("Approve Payment (level two)", groups: "Management", outputs: "Loan Approved (level two)")
+    user_task("Approve Payment (level two)", group: "Management", outputs: "Loan Approved (level two)")
     reroute_task "Level Two Approval Declined", condition: :level_two_approval_declined do
       prototype_task("Handle Level Two Approval Declined")
     end

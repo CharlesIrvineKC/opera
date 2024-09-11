@@ -128,6 +128,9 @@ defmodule OperaWeb.TasksLive do
       <p class="font-normal text-sm text-gray-700 dark:text-gray-400">
         <%= @task.business_key %>
       </p>
+      <p class="font-normal text-sm text-gray-700 dark:text-gray-400">
+        Group: <%= @task.assigned_group %>
+      </p>
       <p :if={@task.assigned_user} class="font-normal text-sm text-gray-700 dark:text-gray-400">
         Assignee: <%= @task.assigned_user %>
       </p>

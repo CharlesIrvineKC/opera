@@ -29,7 +29,7 @@ defmodule Opera.Processes.InvoiceReceipt do
 
   defprocess "Process Invoice Receipt" do
     prototype_task("Assign Approver Group")
-    user_task("Approve Invoice", groups: "Admin", outputs: "Invoice Approved?")
+    user_task("Approve Invoice", group: "Admin", outputs: "Invoice Approved?")
 
     case_task "Approve Invoice Result" do
       case_i :invoice_approved do
@@ -54,7 +54,7 @@ defmodule Opera.Processes.InvoiceReceipt do
       subprocess_task("Review Invoice Subprocess", model: "Review Invoice Process")
 
       conditional_task "Reapprove if not Rejected", condition: :invoice_not_rejected do
-        user_task("Reapprove Invoice", groups: "Admin", outputs: "Invoice Approved?")
+        user_task("Reapprove Invoice", group: "Admin", outputs: "Invoice Approved?")
       end
     end
 
@@ -68,10 +68,10 @@ defmodule Opera.Processes.InvoiceReceipt do
   end
 
   defprocess "Review Invoice Process" do
-    user_task("Assign Reviewer", groups: "Admin", outputs: "Invoice Reviewer ID")
+    user_task("Assign Reviewer", group: "Admin", outputs: "Invoice Reviewer ID")
 
     user_task("Review Invoice",
-      groups: "Admin",
+      group: "Admin",
       outputs: "Invoice Review Determination",
       listener: :assign_user
     )
