@@ -2,8 +2,7 @@ defmodule Opera.Processes.PaymentApprovalApp do
   @moduledoc false
   use Mozart.BpmProcess
 
-  def_bpm_application("Payment Approval Application",
-    main: "Payment Approval Process",
+  def_bpm_application("Payment Approval",
     data: "Payment Amount, Customer Name",
     bk_prefix: "Customer Name"
   )
@@ -20,7 +19,7 @@ defmodule Opera.Processes.PaymentApprovalApp do
     data["Loan Approved (level two)"] == "Declined"
   end
 
-  defprocess "Payment Approval Process" do
+  defprocess "Payment Approval" do
     user_task("Submit For Approval", group: "Accounts Payable", outputs: "Ready for Approval")
     user_task("Approve Payment (level one)", group: "Management", outputs: "Loan Approved (level one)")
     reroute_task "Level One Approval Declined", condition: :level_one_approval_declined do

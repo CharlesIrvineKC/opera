@@ -2,8 +2,7 @@ defmodule Opera.Processes.HomeLoanApp do
   @moduledoc false
   use Mozart.BpmProcess
 
-  def_bpm_application("Home Loan Process",
-    main: "Home Loan",
+  def_bpm_application("Home Loan",
     data: "First Name,Last Name,Income,Debt",
     bk_prefix: "Last Name, First Name"
   )

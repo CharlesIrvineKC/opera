@@ -2,8 +2,7 @@ defmodule Opera.Processes.PrepareBillApp do
   @moduledoc false
   use Mozart.BpmProcess
 
-  def_bpm_application("Prepare Bill Application",
-    main: "Prepare Bill Process",
+  def_bpm_application("Prepare Bill",
     data: "amount, Customer Name, cust_type",
     bk_prefix: "Customer Name"
   )
@@ -22,7 +21,7 @@ defmodule Opera.Processes.PrepareBillApp do
   7        > 2000               Basic                   ||        4
   """
 
-  defprocess "Prepare Bill Process" do
+  defprocess "Prepare Bill" do
     rule_task("Discount Decision", inputs: "amount,cust_type", rule_table: rule_table)
     prototype_task("Create Bill")
   end
