@@ -31,7 +31,9 @@ defmodule OperaWeb.TasksLive do
         bpm_applications: bpm_applications,
         current_task: current_task,
         current_app: nil,
-        user: user
+        filtered_app: nil,
+        user: user,
+        groups: ["Credit", "Underwriting"]
       )
 
     {:ok, socket}
@@ -39,15 +41,153 @@ defmodule OperaWeb.TasksLive do
 
   def render(assigns) do
     ~H"""
-    <.nav bpm_applications={@bpm_applications} />
-    <div class="mx-10 flex flex-row">
-      <div class="mt-8 min-w-72">
-        <.user_task_ref :for={user_task <- @user_tasks} task={user_task}></.user_task_ref>
+    <div class="mx-8">
+      <.nav bpm_applications={@bpm_applications} />
+      <.set_filters bpm_applications={@bpm_applications} />
+      <div class="flex flex-row">
+        <div class="mt-2 mr-12 min-w-72">
+          <.user_task_ref
+            :for={user_task <- @user_tasks}
+            :if={@filtered_app == nil || @filtered_app == user_task.top_level_model_name}
+            task={user_task}
+          >
+          </.user_task_ref>
+        </div>
+        <div>
+          <.task_form current_task={@current_task} user={@user} />
+          <.start_app_form current_app={@current_app} />
+        </div>
       </div>
-      <div>
-        <.task_form current_task={@current_task} user={@user} />
-        <.start_app_form current_app={@current_app} />
+    </div>
+    """
+  end
+
+  def set_process_filter(assigns) do
+    ~H"""
+    <div>
+      <button
+        id="processFilterButton"
+        phx-click={JS.remove_class("hidden", to: "#filter-process-dropdown")}
+        phx-click-away={JS.add_class("hidden", to: "#filter-process-dropdown")}
+        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-light text-xs px-3 py-1.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        type="button"
+      >
+        Filter Processes
+        <svg
+          class="w-2.5 h-2.5 ms-3"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 10 6"
+        >
+          <path
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="m1 1 4 4 4-4"
+          />
+        </svg>
+      </button>
+      <!-- Dropdown menu -->
+      <div class="relative">
+        <div
+          id="filter-process-dropdown"
+          class="z-10 hidden absolute top-0 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700"
+        >
+          <ul
+            class="py-2 text-sm text-gray-700 dark:text-gray-200"
+            aria-labelledby="processFilterButton"
+          >
+            <li>
+              <a
+                phx-click="filter-app"
+                phx-value-app-name={"All"}
+                href="#"
+                class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+              >
+                All
+              </a>
+            </li>
+            <li :for={app <- @bpm_applications}>
+              <a
+                phx-click="filter-app"
+                phx-value-app-name={app.main_model}
+                href="#"
+                class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+              >
+                <%= app.main_model %>
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
+    </div>
+    """
+  end
+
+  def set_groups_filter(assigns) do
+    ~H"""
+    <div>
+      <button
+        id="groupFilterButton"
+        data-dropdown-toggle="groupFilterCheckbox"
+        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-light text-xs px-3 py-1.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        type="button"
+      >
+        Filter Groups
+        <svg
+          class="w-2.5 h-2.5 ms-3"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 10 6"
+        >
+          <path
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="m1 1 4 4 4-4"
+          />
+        </svg>
+      </button>
+      <!-- Dropdown menu -->
+      <div
+        id="groupFilterCheckbox"
+        class="z-10 hidden w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
+      >
+        <ul
+          class="p-3 space-y-3 text-sm text-gray-700 dark:text-gray-200"
+          aria-labelledby="groupFilterButton"
+        >
+          <li>
+            <div class="flex items-center">
+              <input
+                id="checkbox-item-1"
+                type="checkbox"
+                value=""
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+              />
+              <label
+                for="checkbox-item-1"
+                class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+              >
+                Default checkbox
+              </label>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    """
+  end
+
+  def set_filters(assigns) do
+    ~H"""
+    <div class="my-5 flex flex-row gap-1">
+      <.set_process_filter bpm_applications={@bpm_applications} />
+      <%!-- <.set_groups_filter /> --%>
     </div>
     """
   end
@@ -58,7 +198,7 @@ defmodule OperaWeb.TasksLive do
       id="startBpmAppButton"
       phx-click={JS.remove_class("hidden", to: "#dropdown")}
       phx-click-away={JS.add_class("hidden", to: "#dropdown")}
-      class="ml-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
       type="button"
     >
       Start Business Process
@@ -79,7 +219,7 @@ defmodule OperaWeb.TasksLive do
       </svg>
     </button>
     <!-- Dropdown menu -->
-    <div class="relative ml-8">
+    <div class="relative">
       <div
         id="dropdown"
         class="z-10 hidden absolute top-1 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700"
@@ -93,10 +233,10 @@ defmodule OperaWeb.TasksLive do
             <a
               href="#"
               phx-click={handle_select_app()}
-              phx-value-app-name={app.name}
+              phx-value-app-name={app.main_model}
               class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
             >
-              <%= app.name %>
+              <%= app.main_model %>
             </a>
           </li>
         </ul>
@@ -140,7 +280,7 @@ defmodule OperaWeb.TasksLive do
 
   def task_form(assigns) do
     ~H"""
-    <form :if={@current_task} phx-submit="complete_task" class="ml-8">
+    <form :if={@current_task} phx-submit="complete_task">
       <h3 class="text-2xl mb-2 font-bold dark:text-white">
         <%= @current_task.name %> - <%= @current_task.top_level_model_name %>
       </h3>
@@ -197,7 +337,7 @@ defmodule OperaWeb.TasksLive do
 
   def start_app_form(assigns) do
     ~H"""
-    <form :if={@current_app} phx-submit="start_app" class="ml-8">
+    <form :if={@current_app} phx-submit="start_app">
       <div class="grid grid-cols-3 gap-6 mb-4">
         <OC.output_field
           :for={field <- FH.get_ordered_outputs(@current_app.module, @current_app.data)}
@@ -216,6 +356,12 @@ defmodule OperaWeb.TasksLive do
       </div>
     </form>
     """
+  end
+
+  def handle_event("filter-app", %{"app-name" => app_name}, socket) do
+    app_name = unless app_name == "All", do: app_name
+    socket = assign(socket, filtered_app: app_name)
+    {:noreply, socket}
   end
 
   def handle_event("toggle-claim", %{"task-id" => task_id}, socket) do
@@ -257,7 +403,6 @@ defmodule OperaWeb.TasksLive do
     else
       {:noreply, redirect(socket, to: ~p"/tasks")}
     end
-
   end
 
   def handle_event("complete_task", data, socket) do
@@ -278,7 +423,7 @@ defmodule OperaWeb.TasksLive do
     data = convert_number_types(data)
 
     {:ok, ppid, _uid, _key} =
-      PE.start_process(application.main, data, business_key)
+      PE.start_process(application.main_model, data, business_key)
 
     PE.execute(ppid)
     Process.sleep(100)
@@ -288,7 +433,7 @@ defmodule OperaWeb.TasksLive do
 
   def handle_event("set_current_app", %{"app-name" => application_name}, socket) do
     application =
-      Enum.find(socket.assigns.bpm_applications, fn app -> app.name == application_name end)
+      Enum.find(socket.assigns.bpm_applications, fn app -> app.main_model == application_name end)
 
     {:noreply, assign(socket, current_task: nil, current_app: application)}
   end
