@@ -57,7 +57,7 @@ defmodule OperaWeb.ProcessLive do
   def process_header(assigns) do
     ~H"""
     <div class="">
-      <h2 class="text-4xl mb-2 font-bold dark:text-white"><%= @selected_process.model_name %></h2>
+      <h2 class="text-4xl mb-2 font-bold dark:text-white"><%= @selected_process.process %></h2>
       <h4 class="text-xl font-bold dark:text-white"><%= @selected_process.business_key %></h4>
     </div>
     """

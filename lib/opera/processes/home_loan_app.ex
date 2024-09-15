@@ -24,7 +24,7 @@ defmodule Opera.Processes.HomeLoanApp do
 
     user_task("Receive Mortage Application", group: "Credit", outputs: "Purchase Price")
     user_task("Process Loan", group: "Credit", outputs: "Loan Verified")
-    subprocess_task("Perform Loan Evaluation", model: "Perform Loan Evaluation Process")
+    subprocess_task("Perform Loan Evaluation", process: "Perform Loan Evaluation Process")
   end
 
   def loan_failed_verification(data) do
@@ -37,7 +37,7 @@ defmodule Opera.Processes.HomeLoanApp do
     end
 
     user_task("Perform Underwriting", group: "Underwriting", outputs: "Loan Approved")
-    subprocess_task("Route from Underwriting", model: "Route from Underwriting Process")
+    subprocess_task("Route from Underwriting", process: "Route from Underwriting Process")
   end
 
   def loan_declined(data) do

@@ -32,12 +32,12 @@ defmodule Opera.Processes.InvoiceReceipt do
 
     case_task "Approve Invoice Result" do
       case_i :invoice_approved do
-        subprocess_task("Perform Bank Transfer SubTask", model: "Perform Bank Transfer")
+        subprocess_task("Perform Bank Transfer SubTask", process: "Perform Bank Transfer")
       end
 
       case_i :invoice_sent_to_review do
         subprocess_task("Perform Invoice Approval Negotiation Subprocess",
-          model: "Perform Invoice Approval Negotiation"
+          process: "Perform Invoice Approval Negotiation"
         )
       end
     end
@@ -50,7 +50,7 @@ defmodule Opera.Processes.InvoiceReceipt do
 
   defprocess "Perform Invoice Approval Negotiation" do
     repeat_task "Invoice Approval Negotiation", condition: :negotiation_not_resolved do
-      subprocess_task("Review Invoice Subprocess", model: "Review Invoice Process")
+      subprocess_task("Review Invoice Subprocess", process: "Review Invoice Process")
 
       conditional_task "Reapprove if not Rejected", condition: :invoice_not_rejected do
         user_task("Reapprove Invoice", group: "Admin", outputs: "Invoice Approved?")
@@ -58,7 +58,7 @@ defmodule Opera.Processes.InvoiceReceipt do
     end
 
     conditional_task "Negotiation Result", condition: :invoice_approved do
-      subprocess_task("Perform Bank Transfer SubTask", model: "Perform Bank Transfer")
+      subprocess_task("Perform Bank Transfer SubTask", process: "Perform Bank Transfer")
     end
   end
 

@@ -280,7 +280,7 @@ defmodule OperaWeb.ProcessesLive do
               class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
             >
               <td class="px-6 py-4">
-                <%= process.model_name %>
+                <%= process.process %>
               </td>
               <td class="px-6 py-4">
                 <%= process.business_key %>
@@ -323,7 +323,7 @@ defmodule OperaWeb.ProcessesLive do
               class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
             >
               <td class="px-6 py-4">
-                <%= process.model_name %>
+                <%= process.process %>
               </td>
               <td class="px-6 py-4">
                 <%= process.business_key %>

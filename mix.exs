@@ -61,7 +61,7 @@ defmodule Opera.MixProject do
       {:bandit, "~> 1.2"},
       {:timex, "~> 3.7"},
       # {:mozart, path: "../mozart"},
-      {:mozart, "~> 0.7.0"}
+      {:mozart, "~> 0.8.0"}
     ]
   end
 

@@ -10,33 +10,36 @@ defmodule OperaWeb.TasksLive do
 
   on_mount {OperaWeb.UserAuth, :ensure_authenticated}
 
-  def mount(params, %{"user_token" => user_token}, socket) do
-    task_uid =
-      case params do
-        %{"task_uid" => task_uid} -> task_uid
-        _ -> nil
-      end
-
+  def mount(_params, %{"user_token" => user_token}, socket) do
     user_tasks = PS.get_user_tasks()
 
     bpm_applications =
       Enum.map(PS.get_bpm_applications(), fn {_k, v} -> v end)
 
     user = Accounts.get_user_by_session_token(user_token)
-    current_task = if task_uid, do: Enum.find(user_tasks, &(&1.uid == task_uid))
 
     socket =
       assign(socket,
         user_tasks: user_tasks,
         bpm_applications: bpm_applications,
-        current_task: current_task,
         current_app: nil,
+        current_task: nil,
         filtered_app: nil,
         user: user,
         groups: ["Credit", "Underwriting"]
       )
 
     {:ok, socket}
+  end
+
+  def handle_params(%{"task_uid" => task_uid}, _uri, socket) do
+    user_tasks = socket.assigns.user_tasks
+    current_task = Enum.find(user_tasks, &(&1.uid == task_uid))
+    {:noreply, assign(socket, current_task: current_task)}
+  end
+
+  def handle_params(_params, _uri, socket) do
+    {:noreply, assign(socket, current_task: nil)}
   end
 
   def render(assigns) do
@@ -48,7 +51,7 @@ defmodule OperaWeb.TasksLive do
         <div class="mt-2 mr-12 min-w-72">
           <.user_task_ref
             :for={user_task <- @user_tasks}
-            :if={@filtered_app == nil || @filtered_app == user_task.top_level_model_name}
+            :if={@filtered_app == nil || @filtered_app == user_task.top_level_process}
             task={user_task}
           >
           </.user_task_ref>
@@ -102,7 +105,7 @@ defmodule OperaWeb.TasksLive do
             <li>
               <a
                 phx-click="filter-app"
-                phx-value-app-name={"All"}
+                phx-value-filtered-app="All"
                 href="#"
                 class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
@@ -112,11 +115,11 @@ defmodule OperaWeb.TasksLive do
             <li :for={app <- @bpm_applications}>
               <a
                 phx-click="filter-app"
-                phx-value-app-name={app.main_model}
+                phx-value-filtered-app={app.process}
                 href="#"
                 class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
-                <%= app.main_model %>
+                <%= app.process %>
               </a>
             </li>
           </ul>
@@ -233,10 +236,10 @@ defmodule OperaWeb.TasksLive do
             <a
               href="#"
               phx-click={handle_select_app()}
-              phx-value-app-name={app.main_model}
+              phx-value-app-name={app.process}
               class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
             >
-              <%= app.main_model %>
+              <%= app.process %>
             </a>
           </li>
         </ul>
@@ -255,7 +258,7 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <a
       phx-click="toggle_current_task"
-      phx-value-task-id={@task.uid}
+      phx-value-task-uid={@task.uid}
       href="#"
       class="block max-w-sm p-2 bg-white border border-gray-200 shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
     >
@@ -263,7 +266,7 @@ defmodule OperaWeb.TasksLive do
         <%= @task.name %>
       </h5>
       <h5 class="mb-2 text-sm font-bold tracking-tight text-gray-900 dark:text-white">
-        <%= @task.top_level_model_name %>
+        <%= @task.top_level_process %>
       </h5>
       <p class="font-normal text-sm text-gray-700 dark:text-gray-400">
         <%= @task.business_key %>
@@ -282,14 +285,14 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <form :if={@current_task} phx-submit="complete_task">
       <h3 class="text-2xl mb-2 font-bold dark:text-white">
-        <%= @current_task.name %> - <%= @current_task.top_level_model_name %>
+        <%= @current_task.name %> - <%= @current_task.top_level_process %>
       </h3>
       <div class="mb-4 flex justify-between">
         <span><%= @current_task.business_key %></span>
         <div>
           <button
             phx-click="toggle-claim"
-            phx-value-task-id={@current_task.uid}
+            phx-value-task-uid={@current_task.uid}
             type="button"
             class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
@@ -300,7 +303,7 @@ defmodule OperaWeb.TasksLive do
           <button
             :if={@current_task.assigned_user == @user.email || @current_task.assigned_user == nil}
             phx-click="toggle-claim"
-            phx-value-task-id={@current_task.uid}
+            phx-value-task-uid={@current_task.uid}
             type="button"
             class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
@@ -358,14 +361,20 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
-  def handle_event("filter-app", %{"app-name" => app_name}, socket) do
-    app_name = unless app_name == "All", do: app_name
-    socket = assign(socket, filtered_app: app_name)
+  def handle_event("filter-app", %{"filtered-app" => filtered_app}, socket) do
+    filtered_app = unless filtered_app == "All", do: filtered_app
+    current_task = socket.assigns.current_task
+
+    current_task =
+      if current_task && (filtered_app == nil || current_task.top_level_process == filtered_app),
+        do: current_task
+
+    socket = assign(socket, filtered_app: filtered_app, current_task: current_task)
     {:noreply, socket}
   end
 
-  def handle_event("toggle-claim", %{"task-id" => task_id}, socket) do
-    task = Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
+  def handle_event("toggle-claim", %{"task-uid" => task_uid}, socket) do
+    task = Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_uid end)
 
     assignee =
       cond do
@@ -376,7 +385,7 @@ defmodule OperaWeb.TasksLive do
           socket.assigns.user.email
       end
 
-    PS.assign_user_task(task_id, assignee)
+    PS.assign_user_task(task_uid, assignee)
 
     task = Map.put(task, :assigned_user, assignee)
 
@@ -386,22 +395,23 @@ defmodule OperaWeb.TasksLive do
     {:noreply, assign(socket, current_task: task, user_tasks: user_tasks)}
   end
 
-  def handle_event("toggle_current_task", %{"task-id" => task_id}, socket) do
+  def handle_event("toggle_current_task", %{"task-uid" => task_uid}, socket) do
     current_task = socket.assigns.current_task
 
     current_task =
       if current_task == nil do
-        Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
+        Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_uid end)
       else
-        unless current_task.uid == task_id do
-          Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_id end)
+        unless current_task.uid == task_uid do
+          Enum.find(socket.assigns.user_tasks, fn t -> t.uid == task_uid end)
         end
       end
 
     if current_task do
-      {:noreply, redirect(socket, to: ~p"/tasks/#{current_task.uid}")}
+      socket = assign(socket, current_task: current_task)
+      {:noreply, push_patch(socket, to: ~p"/tasks/#{current_task.uid}")}
     else
-      {:noreply, redirect(socket, to: ~p"/tasks")}
+      {:noreply, push_patch(socket, to: ~p"/tasks")}
     end
   end
 
@@ -423,7 +433,7 @@ defmodule OperaWeb.TasksLive do
     data = convert_number_types(data)
 
     {:ok, ppid, _uid, _key} =
-      PE.start_process(application.main_model, data, business_key)
+      PE.start_process(application.process, data, business_key)
 
     PE.execute(ppid)
     Process.sleep(100)
@@ -433,7 +443,7 @@ defmodule OperaWeb.TasksLive do
 
   def handle_event("set_current_app", %{"app-name" => application_name}, socket) do
     application =
-      Enum.find(socket.assigns.bpm_applications, fn app -> app.main_model == application_name end)
+      Enum.find(socket.assigns.bpm_applications, fn app -> app.process == application_name end)
 
     {:noreply, assign(socket, current_task: nil, current_app: application)}
   end
