@@ -274,19 +274,19 @@ defmodule OperaWeb.ProcessesLive do
           </thead>
           <tbody>
             <tr
-              :for={process <- @completed_processes}
+              :for={completed_process <- @completed_processes}
               phx-click="show-process"
-              phx-value-process-id={process.uid}
+              phx-value-process-id={completed_process.uid}
               class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
             >
               <td class="px-6 py-4">
-                <%= process.process %>
+                <%= completed_process.process %>
               </td>
               <td class="px-6 py-4">
-                <%= process.business_key %>
+                <%= completed_process.business_key %>
               </td>
               <td class="px-6 py-4">
-                <%= Timex.format!(process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}-{s}") %>
+                <%= Timex.format!(completed_process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}-{s}") %>
               </td>
             </tr>
           </tbody>
@@ -317,19 +317,19 @@ defmodule OperaWeb.ProcessesLive do
           </thead>
           <tbody>
             <tr
-              :for={process <- @active_processes}
+              :for={active_process <- @active_processes}
               phx-click="show-process"
-              phx-value-process-id={process.uid}
+              phx-value-process-id={active_process.uid}
               class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
             >
               <td class="px-6 py-4">
-                <%= process.process %>
+                <%= active_process.process %>
               </td>
               <td class="px-6 py-4">
-                <%= process.business_key %>
+                <%= active_process.business_key %>
               </td>
               <td class="px-6 py-4">
-                <%= Timex.format!(process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}-{s}") %>
+                <%= Timex.format!(active_process.start_time, "{YYYY}-{0M}-{D}-{h24}-{m}-{s}") %>
               </td>
             </tr>
           </tbody>
