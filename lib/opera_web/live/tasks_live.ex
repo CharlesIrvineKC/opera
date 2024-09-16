@@ -25,6 +25,7 @@ defmodule OperaWeb.TasksLive do
         current_app: nil,
         current_task: nil,
         filtered_app: nil,
+        filtered_groups: [],
         user: user,
         groups: ["Credit", "Underwriting"]
       )
@@ -46,12 +47,12 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <div class="mx-8">
       <.nav bpm_applications={@bpm_applications} />
-      <.set_filters bpm_applications={@bpm_applications} />
+      <.set_filters bpm_applications={@bpm_applications} filtered_app={@filtered_app}/>
       <div class="flex flex-row">
         <div class="mt-2 mr-12 min-w-72">
           <.user_task_ref
             :for={user_task <- @user_tasks}
-            :if={@filtered_app == nil || @filtered_app == user_task.top_level_process}
+            :if={passes_filter(user_task, @filtered_app, @filtered_groups)}
             task={user_task}
           >
           </.user_task_ref>
@@ -63,6 +64,16 @@ defmodule OperaWeb.TasksLive do
       </div>
     </div>
     """
+  end
+
+  def passes_filter(user_task, filtered_app, filtered_groups) do
+    if filtered_app do
+      if filtered_app.process == user_task.top_level_process do
+        filtered_groups == [] || Enum.member?(filtered_groups, user_task.assigned_group)
+      end
+    else
+      true
+    end
   end
 
   def set_process_filter(assigns) do
@@ -131,10 +142,10 @@ defmodule OperaWeb.TasksLive do
 
   def set_groups_filter(assigns) do
     ~H"""
-    <div>
+    <div :if={@filtered_app}>
       <button
         id="groupFilterButton"
-        data-dropdown-toggle="groupFilterCheckbox"
+        phx-click={JS.toggle_class("hidden", to: "#groupFilterCheckbox")}
         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-light text-xs px-3 py-1.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         type="button"
       >
@@ -156,32 +167,36 @@ defmodule OperaWeb.TasksLive do
         </svg>
       </button>
       <!-- Dropdown menu -->
+      <div class="absolute">
       <div
         id="groupFilterCheckbox"
-        class="z-10 hidden w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
+        class="z-10 hidden top-0 w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
       >
         <ul
           class="p-3 space-y-3 text-sm text-gray-700 dark:text-gray-200"
           aria-labelledby="groupFilterButton"
         >
-          <li>
+          <li :for={group <- @filtered_app.groups}>
             <div class="flex items-center">
               <input
-                id="checkbox-item-1"
+                id={"checkbox-#{group}"}
+                phx-click="select-group" phx-value-changed-group={group}
                 type="checkbox"
-                value=""
+                value={group}
+                name={"checkbox-#{group}"}
                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
               />
               <label
-                for="checkbox-item-1"
+                for={"checkbox-#{group}"}
                 class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
               >
-                Default checkbox
+                <%= group %>
               </label>
             </div>
           </li>
         </ul>
       </div>
+    </div>
     </div>
     """
   end
@@ -190,7 +205,7 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <div class="my-5 flex flex-row gap-1">
       <.set_process_filter bpm_applications={@bpm_applications} />
-      <%!-- <.set_groups_filter /> --%>
+      <.set_groups_filter filtered_app={@filtered_app}/>
     </div>
     """
   end
@@ -359,15 +374,28 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
+  def handle_event("select-group", %{"changed-group" => group, "value" => group}, socket) do
+    filtered_groups = socket.assigns.filtered_groups
+    {:noreply, assign(socket, :filtered_groups, [group | filtered_groups])}
+  end
+
+  def handle_event("select-group", %{"changed-group" => group}, socket) do
+    filtered_groups = List.delete(socket.assigns.filtered_groups, group)
+    {:noreply, assign(socket, :filtered_groups, filtered_groups)}
+  end
+
   def handle_event("filter-app", %{"filtered-app" => filtered_app}, socket) do
-    filtered_app = unless filtered_app == "All", do: filtered_app
+    filtered_app = unless filtered_app == "All" do
+      Enum.find(socket.assigns.bpm_applications, &(&1.process == filtered_app))
+    end
+
     current_task = socket.assigns.current_task
 
     current_task =
-      if current_task && (filtered_app == nil || current_task.top_level_process == filtered_app),
+      if current_task && (filtered_app == nil || current_task.top_level_process == filtered_app.process),
         do: current_task
 
-    socket = assign(socket, filtered_app: filtered_app, current_task: current_task)
+    socket = assign(socket, filtered_app: filtered_app, filtered_groups: [], current_task: current_task)
     {:noreply, socket}
   end
 
