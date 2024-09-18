@@ -25,13 +25,23 @@ defmodule OperaWeb.TasksLive do
         current_app: nil,
         current_task: nil,
         filtered_app: nil,
-        filtered_groups: [],
+        filtered_app_groups: [],
         assigned_to_me: false,
+        assigned_to_my_groups: false,
         user: user,
-        groups: ["Credit", "Underwriting"]
+        users_groups: get_users_groups(user)
       )
 
     {:ok, socket}
+  end
+
+  defp get_users_groups(_user) do
+    %{
+      "Home Loan" => ["Underwriting"],
+      "Invoice Receipt" => ["Admin"],
+      "Payment Approval" => ["Management"],
+      "Prepare Bill" => []
+    }
   end
 
   def handle_params(%{"task_uid" => task_uid}, _uri, socket) do
@@ -53,7 +63,17 @@ defmodule OperaWeb.TasksLive do
         <div class="mt-2 mr-12 min-w-72">
           <.user_task_ref
             :for={user_task <- @user_tasks}
-            :if={passes_filters(user_task, @filtered_app, @filtered_groups, @assigned_to_me, @user)}
+            :if={
+              passes_filters(
+                user_task,
+                @filtered_app,
+                @filtered_app_groups,
+                @assigned_to_me,
+                @assigned_to_my_groups,
+                @user,
+                @users_groups
+              )
+            }
             task={user_task}
           >
           </.user_task_ref>
@@ -67,18 +87,39 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
-  def passes_filters(user_task, filtered_app, filtered_groups, assigned_to_me, user) do
+  def passes_filters(
+        user_task,
+        filtered_app,
+        filtered_app_groups,
+        assigned_to_me,
+        assigned_to_my_groups,
+        user,
+        users_groups
+      ) do
     passes_app_filter(filtered_app, user_task) &&
       passes_user_filter(assigned_to_me, user, user_task) &&
-      passes_group_filter(filtered_groups, user_task)
+      passes_group_filter(filtered_app_groups, user_task) &&
+      passes_users_group_filter(assigned_to_my_groups, users_groups, user_task)
+  end
+
+  def passes_users_group_filter(assigned_to_my_groups, users_groups, user_task) do
+    !assigned_to_my_groups ||
+      user_has_group(user_task, users_groups)
+  end
+
+  def user_has_group(user_task, users_groups) do
+      process = user_task.top_level_process
+      group = user_task.assigned_group
+      permitted_groups = Map.get(users_groups, process)
+      Enum.member?(permitted_groups, group)
   end
 
   def passes_app_filter(filtered_app, user_task) do
     !filtered_app || filtered_app.process == user_task.top_level_process
   end
 
-  def passes_group_filter(filtered_groups, user_task) do
-    filtered_groups == [] || Enum.member?(filtered_groups, user_task.assigned_group)
+  def passes_group_filter(filtered_app_groups, user_task) do
+    filtered_app_groups == [] || Enum.member?(filtered_app_groups, user_task.assigned_group)
   end
 
   def passes_user_filter(assigned_to_me, user, user_task) do
@@ -228,12 +269,33 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
+  def set_users_group_filter(assigns) do
+    ~H"""
+    <div class="flex items-center ml-4">
+      <input
+        id="assigned-to-my-groups-cb"
+        phx-click="toggle-assigned-to-my-groups"
+        type="checkbox"
+        value=""
+        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+      />
+      <label
+        for="assigned-to-my-groups-cb"
+        class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+      >
+        Assigned to My Groups
+      </label>
+    </div>
+    """
+  end
+
   def set_filters(assigns) do
     ~H"""
     <div class="my-5 flex flex-row gap-2">
       <.set_process_filter bpm_applications={@bpm_applications} />
       <.set_groups_filter filtered_app={@filtered_app} />
       <.set_user_filter />
+      <.set_users_group_filter />
     </div>
     """
   end
@@ -406,14 +468,18 @@ defmodule OperaWeb.TasksLive do
     {:noreply, assign(socket, :assigned_to_me, !socket.assigns.assigned_to_me)}
   end
 
+  def handle_event("toggle-assigned-to-my-groups", _params, socket) do
+    {:noreply, assign(socket, :assigned_to_my_groups, !socket.assigns.assigned_to_my_groups)}
+  end
+
   def handle_event("select-group", %{"changed-group" => group, "value" => group}, socket) do
-    filtered_groups = socket.assigns.filtered_groups
-    {:noreply, assign(socket, :filtered_groups, [group | filtered_groups])}
+    filtered_app_groups = socket.assigns.filtered_app_groups
+    {:noreply, assign(socket, :filtered_app_groups, [group | filtered_app_groups])}
   end
 
   def handle_event("select-group", %{"changed-group" => group}, socket) do
-    filtered_groups = List.delete(socket.assigns.filtered_groups, group)
-    {:noreply, assign(socket, :filtered_groups, filtered_groups)}
+    filtered_app_groups = List.delete(socket.assigns.filtered_app_groups, group)
+    {:noreply, assign(socket, :filtered_app_groups, filtered_app_groups)}
   end
 
   def handle_event("filter-app", %{"filtered-app" => filtered_app}, socket) do
@@ -430,7 +496,11 @@ defmodule OperaWeb.TasksLive do
          do: current_task
 
     socket =
-      assign(socket, filtered_app: filtered_app, filtered_groups: [], current_task: current_task)
+      assign(socket,
+        filtered_app: filtered_app,
+        filtered_app_groups: [],
+        current_task: current_task
+      )
 
     {:noreply, socket}
   end
@@ -523,7 +593,7 @@ defmodule OperaWeb.TasksLive do
   end
 
   def get_business_key(input_map, key_list) do
-    values = Enum.map(key_list, &(Map.get(input_map, &1)))
+    values = Enum.map(key_list, &Map.get(input_map, &1))
     Enum.reduce(values, &(&2 <> "-" <> &1))
   end
 end
