@@ -16,6 +16,8 @@ defmodule OperaWeb.TasksLive do
     bpm_applications =
       Enum.map(PS.get_bpm_applications(), fn {_k, v} -> v end)
 
+    all_groups = Enum.uniq(List.flatten(Enum.map(bpm_applications, & &1.groups)))
+
     user = Accounts.get_user_by_session_token(user_token)
 
     socket =
@@ -25,7 +27,8 @@ defmodule OperaWeb.TasksLive do
         current_app: nil,
         current_task: nil,
         filtered_app: nil,
-        filtered_app_groups: [],
+        filtered_groups: [],
+        all_groups: all_groups,
         assigned_to_me: false,
         assigned_to_my_groups: false,
         user: user,
@@ -35,14 +38,7 @@ defmodule OperaWeb.TasksLive do
     {:ok, socket}
   end
 
-  defp get_users_groups(_user) do
-    %{
-      "Home Loan" => ["Underwriting"],
-      "Invoice Receipt" => ["Admin"],
-      "Payment Approval" => ["Management"],
-      "Prepare Bill" => []
-    }
-  end
+  defp get_users_groups(_user), do: ["Underwriting", "Admin", "Management", "Credit"]
 
   def handle_params(%{"task_uid" => task_uid}, _uri, socket) do
     user_tasks = socket.assigns.user_tasks
@@ -58,7 +54,11 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <div class="mx-8">
       <.nav bpm_applications={@bpm_applications} />
-      <.set_filters bpm_applications={@bpm_applications} filtered_app={@filtered_app} />
+      <.set_filters
+        bpm_applications={@bpm_applications}
+        filtered_app={@filtered_app}
+        all_groups={@all_groups}
+      />
       <div class="flex flex-row">
         <div class="mt-2 mr-12 min-w-72">
           <.user_task_ref
@@ -67,7 +67,7 @@ defmodule OperaWeb.TasksLive do
               passes_filters(
                 user_task,
                 @filtered_app,
-                @filtered_app_groups,
+                @filtered_groups,
                 @assigned_to_me,
                 @assigned_to_my_groups,
                 @user,
@@ -90,7 +90,7 @@ defmodule OperaWeb.TasksLive do
   def passes_filters(
         user_task,
         filtered_app,
-        filtered_app_groups,
+        filtered_groups,
         assigned_to_me,
         assigned_to_my_groups,
         user,
@@ -98,7 +98,7 @@ defmodule OperaWeb.TasksLive do
       ) do
     passes_app_filter(filtered_app, user_task) &&
       passes_user_filter(assigned_to_me, user, user_task) &&
-      passes_group_filter(filtered_app_groups, user_task) &&
+      passes_group_filter(filtered_groups, user_task) &&
       passes_users_group_filter(assigned_to_my_groups, users_groups, user_task)
   end
 
@@ -108,18 +108,15 @@ defmodule OperaWeb.TasksLive do
   end
 
   def user_has_group(user_task, users_groups) do
-      process = user_task.top_level_process
-      group = user_task.assigned_group
-      permitted_groups = Map.get(users_groups, process)
-      Enum.member?(permitted_groups, group)
+      Enum.member?(users_groups, user_task.assigned_group)
   end
 
   def passes_app_filter(filtered_app, user_task) do
     !filtered_app || filtered_app.process == user_task.top_level_process
   end
 
-  def passes_group_filter(filtered_app_groups, user_task) do
-    filtered_app_groups == [] || Enum.member?(filtered_app_groups, user_task.assigned_group)
+  def passes_group_filter(filtered_groups, user_task) do
+    filtered_groups == [] || Enum.member?(filtered_groups, user_task.assigned_group)
   end
 
   def passes_user_filter(assigned_to_me, user, user_task) do
@@ -192,7 +189,7 @@ defmodule OperaWeb.TasksLive do
 
   def set_groups_filter(assigns) do
     ~H"""
-    <div :if={@filtered_app}>
+    <div>
       <button
         id="groupFilterButton"
         phx-click={JS.toggle_class("hidden", to: "#groupFilterCheckbox")}
@@ -226,7 +223,7 @@ defmodule OperaWeb.TasksLive do
             class="p-3 space-y-3 text-sm text-gray-700 dark:text-gray-200"
             aria-labelledby="groupFilterButton"
           >
-            <li :for={group <- @filtered_app.groups}>
+            <li :for={group <- @all_groups}>
               <div class="flex items-center">
                 <input
                   id={"checkbox-#{group}"}
@@ -293,7 +290,7 @@ defmodule OperaWeb.TasksLive do
     ~H"""
     <div class="my-5 flex flex-row gap-2">
       <.set_process_filter bpm_applications={@bpm_applications} />
-      <.set_groups_filter filtered_app={@filtered_app} />
+      <.set_groups_filter all_groups={@all_groups} />
       <.set_user_filter />
       <.set_users_group_filter />
     </div>
@@ -473,13 +470,13 @@ defmodule OperaWeb.TasksLive do
   end
 
   def handle_event("select-group", %{"changed-group" => group, "value" => group}, socket) do
-    filtered_app_groups = socket.assigns.filtered_app_groups
-    {:noreply, assign(socket, :filtered_app_groups, [group | filtered_app_groups])}
+    filtered_groups = socket.assigns.filtered_groups
+    {:noreply, assign(socket, :filtered_groups, [group | filtered_groups])}
   end
 
   def handle_event("select-group", %{"changed-group" => group}, socket) do
-    filtered_app_groups = List.delete(socket.assigns.filtered_app_groups, group)
-    {:noreply, assign(socket, :filtered_app_groups, filtered_app_groups)}
+    filtered_groups = List.delete(socket.assigns.filtered_groups, group)
+    {:noreply, assign(socket, :filtered_groups, filtered_groups)}
   end
 
   def handle_event("filter-app", %{"filtered-app" => filtered_app}, socket) do
@@ -498,7 +495,7 @@ defmodule OperaWeb.TasksLive do
     socket =
       assign(socket,
         filtered_app: filtered_app,
-        filtered_app_groups: [],
+        filtered_groups: [],
         current_task: current_task
       )
 
