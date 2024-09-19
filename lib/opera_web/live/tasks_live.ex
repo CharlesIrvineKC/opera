@@ -13,10 +13,13 @@ defmodule OperaWeb.TasksLive do
   def mount(_params, %{"user_token" => user_token}, socket) do
     user_tasks = PS.get_user_tasks()
 
-    bpm_applications =
-      Enum.map(PS.get_bpm_applications(), fn {_k, v} -> v end)
+    bpm_applications = Keyword.values(PS.get_bpm_applications())
 
-    all_groups = Enum.uniq(List.flatten(Enum.map(bpm_applications, & &1.groups)))
+    all_groups =
+      Enum.map(bpm_applications, &(&1.groups))
+      |> List.flatten()
+      |> Enum.uniq()
+      |> Enum.sort(&(&1 < &2))
 
     user = Accounts.get_user_by_session_token(user_token)
 
