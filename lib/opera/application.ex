@@ -16,6 +16,7 @@ defmodule Opera.Application do
       {Finch, name: Opera.Finch},
       # Start a worker by calling: Opera.Worker.start_link(arg)
       # {Opera.Worker, arg},
+      Opera.Admin,
       # Start to serve requests, typically the last entry
       OperaWeb.Endpoint
     ]

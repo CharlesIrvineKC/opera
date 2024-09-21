@@ -7,20 +7,15 @@ defmodule OperaWeb.TasksLive do
   alias OperaWeb.OperaComponents, as: OC
   alias OperaWeb.FormHelper, as: FH
   alias Opera.Accounts
+  alias Opera.Admin
 
   on_mount {OperaWeb.UserAuth, :ensure_authenticated}
 
   def mount(_params, %{"user_token" => user_token}, socket) do
+
     user_tasks = PS.get_user_tasks()
-
-    bpm_applications = Keyword.values(PS.get_bpm_applications())
-
-    all_groups =
-      Enum.map(bpm_applications, &(&1.groups))
-      |> List.flatten()
-      |> Enum.uniq()
-      |> Enum.sort(&(&1 < &2))
-
+    bpm_applications = Admin.get_bpm_applications()
+    all_groups = Admin.get_all_groups()
     user = Accounts.get_user_by_session_token(user_token)
 
     socket =
