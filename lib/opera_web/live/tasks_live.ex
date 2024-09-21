@@ -30,13 +30,11 @@ defmodule OperaWeb.TasksLive do
         assigned_to_me: false,
         assigned_to_my_groups: false,
         user: user,
-        users_groups: get_users_groups(user)
+        users_groups: Admin.get_user_groups(user.email)
       )
 
     {:ok, socket}
   end
-
-  defp get_users_groups(_user), do: ["Underwriting", "Admin", "Management", "Credit"]
 
   def handle_params(%{"task_uid" => task_uid}, _uri, socket) do
     user_tasks = socket.assigns.user_tasks
