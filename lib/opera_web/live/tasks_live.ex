@@ -557,8 +557,7 @@ defmodule OperaWeb.TasksLive do
 
     data = convert_number_types(data)
 
-    {:ok, ppid, _uid, _key} =
-      PE.start_process(application.process, data, business_key)
+    {:ok, ppid, _uid, _key} = PE.start_process(application.process, data, business_key)
 
     PE.execute(ppid)
     Process.sleep(100)
