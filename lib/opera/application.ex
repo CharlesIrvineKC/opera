@@ -8,6 +8,7 @@ defmodule Opera.Application do
     children = [
       OperaWeb.Telemetry,
       Opera.Repo,
+      {Oban, Application.fetch_env!(:opera, Oban)},
       {DNSCluster, query: Application.get_env(:opera, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Opera.PubSub},
       {Finch, name: Opera.Finch},

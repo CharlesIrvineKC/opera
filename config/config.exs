@@ -11,12 +11,13 @@ config :opera,
   ecto_repos: [Opera.Repo],
   generators: [timestamp_type: :utc_datetime]
 
-  config :opera, :process_apps, [
-    {"Process a Home Loan", Opera.Processes.HomeLoanApp},
-    {"Prepare Bill", Opera.Processes.PrepareBillApp},
-    {"Payment Approval", Opera.Processes.PaymentApprovalApp},
-    {"Process Invoice", Opera.Processes.InvoiceReceipt}
-  ]
+config :opera, :process_apps, [
+  {"Process a Home Loan", Opera.Processes.HomeLoanApp},
+  {"Prepare Bill", Opera.Processes.PrepareBillApp},
+  {"Payment Approval", Opera.Processes.PaymentApprovalApp},
+  {"Process Invoice", Opera.Processes.InvoiceReceipt},
+  {"Send Invoices", Opera.Processes.SendInvoices}
+]
 
 # Configures the endpoint
 config :opera, OperaWeb.Endpoint,
@@ -67,6 +68,16 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :opera, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10],
+  repo: Opera.Repo,
+  plugins: [
+    {Oban.Plugins.Cron, crontab: [
+      {"0 */2 * * *", Opera.Workers.SendInvoicesWorker} # every two hours
+    ]}
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
