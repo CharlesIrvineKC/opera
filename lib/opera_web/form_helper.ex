@@ -30,6 +30,8 @@ defmodule OperaWeb.FormHelper do
         end)
 
       ordered_outputs ++ (outputs -- ordered_outputs)
+    else
+      outputs
     end
   end
 
@@ -45,11 +47,8 @@ defmodule OperaWeb.FormHelper do
 
       data =
         Enum.reduce(data, [], fn {k, v}, acc ->
-          if Enum.find(ordered_inputs, fn {k1, _v1} -> k == k1 end) do
-            acc
-          else
-            [{k, v} | acc]
-          end
+          if Enum.find(ordered_inputs, fn {k1, _v1} -> k == k1 end),
+            do: acc, else: [{k, v} | acc]
         end)
 
       ordered_inputs ++ data
