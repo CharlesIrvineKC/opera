@@ -75,7 +75,7 @@ config :opera, Oban,
   repo: Opera.Repo,
   plugins: [
     {Oban.Plugins.Cron, crontab: [
-      {"* * * * *", Opera.Workers.SendInvoicesWorker}
+      {"* */2 * * *", Opera.Workers.SendInvoicesWorker}
     ]}
   ]
 
