@@ -6,9 +6,9 @@ defmodule Opera.Workers.SendInvoicesWorker do
 
   @impl Oban.Worker
   def perform(_job) do
-    application = ProcessService.get_bpm_application("Send Invoices")
+    process_model = ProcessService.get_process_model("Send Invoices")
 
-    if application do
+    if process_model do
       data = %{
         "Company Name" => "Acme Hardware",
         "Account Number" => "Acme 0001",
@@ -17,10 +17,10 @@ defmodule Opera.Workers.SendInvoicesWorker do
 
       time = Timex.now() |> Timex.format!("{YYYY}-{0M}-{D}-{h24}-{m}-{s}")
 
-      business_key = get_business_key(data, application.bk_prefix) <> "-" <> time
+      business_key = "Acme Hardware - 10000" <> "-" <> time
 
       {:ok, ppid, _uid, _key} =
-        ProcessEngine.start_process(application.process, data, business_key)
+        ProcessEngine.start_process(process_model, data, business_key)
 
       ProcessEngine.execute(ppid)
       :ok

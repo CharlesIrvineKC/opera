@@ -6,22 +6,26 @@ defmodule Opera.SendInvoicesWorkerTest do
   alias Mozart.ProcessService
 
   test "get application" do
-    application = ProcessService.get_bpm_application("Send Invoices")
-    assert application != nil
+    process = ProcessService.get_process_model("Send Invoices")
+    assert process != nil
   end
 
   test "get business key" do
-    application = ProcessService.get_bpm_application("Send Invoices")
+    process_model = ProcessService.get_process_model("Send Invoices")
 
     data = %{
       "Company Name" => "Acme Hardware",
       "Account Number" => "Acme 0001",
       "Amount" => "10000"
     }
+
     time = Timex.now() |> Timex.format!("{YYYY}-{0M}-{D}-{h24}-{m}-{s}")
 
-    business_key = Worker.get_business_key(data, application.bk_prefix) <> "-" <> time
+    business_key = "Acme Hardware - 10000 - " <> time
 
-    assert business_key != nil
+    {:ok, ppid, _uid, _key} =
+      ProcessEngine.start_process(process_model, data, business_key)
+
+    ProcessEngine.execute(ppid)
   end
 end
