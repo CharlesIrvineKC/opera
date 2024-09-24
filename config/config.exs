@@ -16,7 +16,8 @@ config :opera, :process_apps, [
   {"Prepare Bill", Opera.Processes.PrepareBillApp},
   {"Payment Approval", Opera.Processes.PaymentApprovalApp},
   {"Process Invoice", Opera.Processes.InvoiceReceipt},
-  {"Send Invoices", Opera.Processes.SendInvoices}
+  {"Send Invoices", Opera.Processes.SendInvoices},
+  {"Oban Timer Process", Opera.Processes.ObanTimerTaskProcess}
 ]
 
 # Configures the endpoint
