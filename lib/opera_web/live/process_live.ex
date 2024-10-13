@@ -2,35 +2,32 @@ defmodule OperaWeb.ProcessLive do
   use OperaWeb, :live_view
 
   alias OperaWeb.OperaComponents, as: OC
-  alias Mozart.ProcessEngine
-  alias Mozart.ProcessService
+  alias Mozart.ProcessService, as: PS
   alias Timex.Duration
 
   def mount(%{"process_uid" => process_uid, "process_state" => process_state}, _session, socket) do
-    process_pids = Map.values(ProcessService.get_active_processes())
+    selected_process =
+      if process_state == "active",
+        do: PS.get_process_state(process_uid),
+        else: PS.get_completed_process(process_uid)
 
-    processes =
-      if process_state == "active" do
-        Enum.map(process_pids, fn pid -> ProcessEngine.get_state(pid) end)
-      else
-        ProcessService.get_completed_processes()
-      end
+    process_name = PS.get_process_state_process(selected_process)
 
-    selected_process = Enum.find(processes, fn ps -> ps.uid == process_uid end)
-
-    subprocesses = Enum.filter(processes, fn p -> p.business_key == selected_process.business_key end)
-
-    open_tasks = Enum.map(subprocesses, fn p -> Map.values(p.open_tasks) end) |> List.flatten()
-    open_tasks = Enum.sort(open_tasks, &(Timex.before?(&1.start_time, &2.start_time)))
+    open_tasks =
+      PS.get_open_tasks(selected_process)
+      |> Enum.sort(&Timex.before?(&1.start_time, &2.start_time))
 
     visible_task_types = [:user, :prototype, :service, :timer, :rule, :receive]
-    completed_tasks = Enum.map(subprocesses, & &1.completed_tasks) |> List.flatten()
-    completed_tasks = Enum.sort(completed_tasks, &(Timex.before?(&1.finish_time, &2.finish_time)))
-    completed_tasks = Enum.filter(completed_tasks, &(Enum.member?(visible_task_types,&1.type)))
+
+    completed_tasks =
+      selected_process.completed_tasks
+      |> Enum.sort(&Timex.before?(&1.finish_time, &2.finish_time))
+      |> Enum.filter(&Enum.member?(visible_task_types, &1.type))
 
     socket =
       assign(socket,
         selected_process: selected_process,
+        process: process_name,
         process_state: process_state,
         open_tasks: open_tasks,
         completed_tasks: completed_tasks,
@@ -43,7 +40,7 @@ defmodule OperaWeb.ProcessLive do
   def render(assigns) do
     ~H"""
     <div class="ml-10">
-      <.process_header selected_process={@selected_process} />
+      <.process_header selected_process={@selected_process} process={@process} />
       <hr class="h-1 mx-auto my-4 bg-gray-200 border-0 rounded md:my-10 dark:bg-gray-700" />
       <.tasks tasks={@open_tasks} task_state="open" selected_task={@selected_task} />
       <.tasks tasks={@completed_tasks} task_state="completed" selected_task={@selected_task} />
@@ -57,7 +54,7 @@ defmodule OperaWeb.ProcessLive do
   def process_header(assigns) do
     ~H"""
     <div class="">
-      <h2 class="text-4xl mb-2 font-bold dark:text-white"><%= @selected_process.process %></h2>
+      <h2 class="text-4xl mb-2 font-bold dark:text-white"><%= @process %></h2>
       <h4 class="text-xl font-bold dark:text-white"><%= @selected_process.business_key %></h4>
     </div>
     """
@@ -160,7 +157,6 @@ defmodule OperaWeb.ProcessLive do
   end
 
   def handle_event("select-task", %{"task-uid" => task_uid, "task-state" => task_state}, socket) do
-
     tasks =
       cond do
         task_state == "open" -> socket.assigns.open_tasks
