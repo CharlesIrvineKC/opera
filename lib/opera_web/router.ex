@@ -24,8 +24,8 @@ defmodule OperaWeb.Router do
     live "/tasks/:task_uid", TasksLive
     live "/processes", ProcessesLive
     live "/processes/:process_uid", ProcessLive
-    live "/users", UsersLive
-    live "/users/:user_id", EditUserLive
+    live "/admin", AdminLive
+    live "/admin/:user_id", EditUserLive
   end
 
   scope "/", OperaWeb do

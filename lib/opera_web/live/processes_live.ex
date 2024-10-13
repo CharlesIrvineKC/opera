@@ -18,12 +18,10 @@ defmodule OperaWeb.ProcessesLive do
 
     active_processes =
       Enum.map(process_pids, fn pid -> ProcessEngine.get_state(pid) end)
-      |> Enum.filter(fn p -> p.parent_uid == nil end)
       |> Enum.sort(&Timex.before?(&1.start_time, &2.start_time))
 
     completed_processes =
       ProcessService.get_completed_processes()
-      |> Enum.filter(fn p -> p.parent_uid == nil end)
       |> Enum.sort(&Timex.before?(&1.start_time, &2.start_time))
 
     selected_process = nil
@@ -154,26 +152,26 @@ defmodule OperaWeb.ProcessesLive do
         </button>
         <!-- Dropdown menu -->
         <div class="relative">
-        <div
-          id="applicationsNavBar"
-          class="z-10 absolute top-0 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600"
-        >
-          <ul
-            class="py-2 text-sm text-gray-700 dark:text-gray-400"
-            aria-labelledby="dropdownLargeButton"
+          <div
+            id="applicationsNavBar"
+            class="z-10 absolute top-0 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600"
           >
-            <li :for={{name, module} <- @bpm_modules}>
-              <a
-                phx-click={load_app()}
-                phx-value-application={module}
-                href="#"
-                class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-              >
-                <%= name %>
-              </a>
-            </li>
-          </ul>
-        </div>
+            <ul
+              class="py-2 text-sm text-gray-700 dark:text-gray-400"
+              aria-labelledby="dropdownLargeButton"
+            >
+              <li :for={{name, module} <- @bpm_modules}>
+                <a
+                  phx-click={load_app()}
+                  phx-value-application={module}
+                  href="#"
+                  class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                >
+                  <%= name %>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </li>
     </ul>
@@ -242,7 +240,7 @@ defmodule OperaWeb.ProcessesLive do
     <nav class="bg-gray-50 dark:bg-gray-700">
       <div class="max-w-screen-xl px-4 py-3 mx-auto">
         <div class="flex gap-4 items-center">
-          <.load_bpm_app_dropdown bpm_modules={@bpm_modules}/>
+          <.load_bpm_app_dropdown bpm_modules={@bpm_modules} />
           <.admin_dropdown />
         </div>
       </div>
@@ -280,7 +278,7 @@ defmodule OperaWeb.ProcessesLive do
               class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
             >
               <td class="px-6 py-4">
-                <%= completed_process.process %>
+                <%= completed_process.top_level_process %>
               </td>
               <td class="px-6 py-4">
                 <%= completed_process.business_key %>
@@ -323,7 +321,7 @@ defmodule OperaWeb.ProcessesLive do
               class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
             >
               <td class="px-6 py-4">
-                <%= active_process.process %>
+                <%= active_process.top_level_process %>
               </td>
               <td class="px-6 py-4">
                 <%= active_process.business_key %>

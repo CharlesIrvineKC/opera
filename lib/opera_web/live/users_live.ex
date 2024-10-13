@@ -1,4 +1,4 @@
-defmodule OperaWeb.UsersLive do
+defmodule OperaWeb.AdminLive do
   alias Opera.Accounts
   use OperaWeb, :live_view
 
@@ -34,7 +34,7 @@ defmodule OperaWeb.UsersLive do
               <%= user.email %>
             </th>
             <td class="px-6 py-4">
-              <a href={~p"/users/#{user.email}"} class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+              <a href={~p"/admin/#{user.email}"} class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
                 Edit
               </a>
             </td>
