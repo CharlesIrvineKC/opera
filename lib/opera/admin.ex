@@ -53,7 +53,7 @@ defmodule Opera.Admin do
   end
 
   def handle_call({:get_user_groups, user_id}, _from, state) do
-    groups = CubDB.get(state.user_group_db, user_id)
+    groups = CubDB.get(state.user_group_db, user_id) || []
     {:reply, groups, state}
   end
 
