@@ -30,6 +30,10 @@ defmodule Opera.Accounts do
     Repo.get_by(User, email: email)
   end
 
+  def delete_user_by_id(email) do
+    get_user_by_email(email) |> Repo.delete()
+  end
+
   @doc """
   Gets a user by email and password.
 
