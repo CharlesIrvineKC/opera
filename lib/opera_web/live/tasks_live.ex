@@ -385,17 +385,14 @@ defmodule OperaWeb.TasksLive do
       <h3 class="text-2xl mb-2 font-bold dark:text-white">
         <%= @current_task.name %> - <%= @current_task.top_level_process %>
       </h3>
+      <h3 class="mb-5 dark:text-white">
+        <%= @current_task.business_key %>
+      </h3>
+      <h3 :if={Map.get(@current_task, :documentation)} class="mb-7 dark:text-white">
+        <%= Map.get(@current_task, :documentation) %>
+      </h3>
       <div class="mb-4 flex justify-between">
-        <span><%= @current_task.business_key %></span>
         <div>
-          <button
-            type="button"
-            class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            <.link href={~p"/processes/#{@current_task.process_uid}/?process_state=active"}>
-              History
-            </.link>
-          </button>
           <button
             :if={@current_task.assigned_user == @user.email || @current_task.assigned_user == nil}
             phx-click="toggle-claim"
@@ -404,6 +401,14 @@ defmodule OperaWeb.TasksLive do
             class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
             <%= if @current_task.assigned_user == @user.email, do: "Release", else: "Claim" %>
+          </button>
+          <button
+            type="button"
+            class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <.link href={~p"/processes/#{@current_task.process_uid}/?process_state=active"}>
+              History
+            </.link>
           </button>
         </div>
       </div>

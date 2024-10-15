@@ -16,7 +16,12 @@ defmodule Opera.Processes.HomeLoanApp do
   def_choice_type("Loan Approved", choices: "Approved, Declined")
 
   defprocess "Home Loan" do
-    user_task("Perform Pre-Approval", group: "Credit", outputs: "Pre Approval")
+    user_task("Perform Pre-Approval", group: "Credit", outputs: "Pre Approval",
+    documentation:  """
+    Check all documents for adherence to bank loan standards. Grant pre-approval only
+    if there are no discrepancies.
+    """
+    )
 
     reroute_task "Pre-Approval Denied", condition: :pre_approval_declined do
       user_task("Communicate Loan Denied", group: "Credit", outputs: "Communicate Loan Denied")
