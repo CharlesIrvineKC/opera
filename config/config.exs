@@ -15,7 +15,7 @@ config :opera, :process_apps, [
   {"Process a Home Loan", Opera.Processes.HomeLoanApp},
   {"Prepare Bill", Opera.Processes.PrepareBillApp},
   {"Payment Approval", Opera.Processes.PaymentApprovalApp},
-  {"Process Invoice", Opera.Processes.InvoiceReceipt},
+  {"Invoice Receipt", Opera.Processes.InvoiceReceipt},
   {"Send Invoices", Opera.Processes.SendInvoices},
   {"Oban Timer Process", Opera.Processes.ObanTimerTaskProcess}
 ]
