@@ -31,8 +31,8 @@ defmodule OperaWeb.WelcomeLive do
             Login Credentials
             </h5>
           <p class="font-normal text-gray-700 dark:text-gray-400">
-            For now, login with user ID: <b>admin@opera.com</b>
-            and password: <b>admin</b>. Soon, we will have addition testing credentials established to exercise different Opera/Mozart functionalities.
+            Feel free to login with user ID: <b>admin@opera.com</b>
+            and password: <b>admin</b>. Or, you can register with your own user id (email address) and password. Opera doesn't do any kind of credentials verification, so you can specify made up credentials if you wish.
           </p>
           </a>
         </div>
@@ -77,6 +77,26 @@ defmodule OperaWeb.WelcomeLive do
                 <li>View Active Processes</li>
                 <li>View Completed Processes</li>
                 <li>View Process Details <em>(by Clicking on a Process)</em></li>
+              </ul>
+            </p>
+          </a>
+        </div>
+        <div>
+          <a
+            href="#"
+            class="block p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+          >
+            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+              Users View
+            </h5>
+            <p class="font-normal text-gray-700 dark:text-gray-400">
+              When logged in, a <b>Users</b>
+              link should be visible at the right top of your browser window. Click on this link to expose the <b>Opera Users View</b>.
+              <br /><br />
+              <p><b>From this view, you can:</b></p>
+              <ul class="space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
+                <li>Assign / Delete Groups to / from Your User ID</li>
+                <li>Delete Users from Opera<em> (but just your own ID, please</em></li>
               </ul>
             </p>
           </a>
