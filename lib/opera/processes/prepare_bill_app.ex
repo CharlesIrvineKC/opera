@@ -23,6 +23,6 @@ defmodule Opera.Processes.PrepareBillApp do
 
   defprocess "Prepare Bill" do
     rule_task("Discount Decision", inputs: "amount,cust_type", rule_table: rule_table)
-    prototype_task("Create Bill")
+    user_task("Create and Send Bill", group: "Billing", outputs: "Discounted Amount")
   end
 end

@@ -12,7 +12,6 @@ defmodule OperaWeb.TasksLive do
   on_mount {OperaWeb.UserAuth, :ensure_authenticated}
 
   def mount(_params, %{"user_token" => user_token}, socket) do
-
     user_tasks = PS.get_user_tasks()
     bpm_applications = Admin.get_bpm_applications()
     all_groups = Admin.get_all_groups()
@@ -104,7 +103,7 @@ defmodule OperaWeb.TasksLive do
   end
 
   def user_has_group(user_task, users_groups) do
-      Enum.member?(users_groups, user_task.assigned_group)
+    Enum.member?(users_groups, user_task.assigned_group)
   end
 
   def passes_app_filter(filtered_app, user_task) do
@@ -558,7 +557,7 @@ defmodule OperaWeb.TasksLive do
   def handle_event("start_app", data, socket) do
     application = socket.assigns.current_app
     time = Timex.now() |> Timex.format!("{YYYY}-{0M}-{D}-{h24}-{m}-{s}")
-    business_key = get_business_key(data, application.bk_prefix) <> "-" <> time
+    business_key = get_business_key(data, application) <> "-" <> time
 
     data = convert_number_types(data)
 
@@ -581,16 +580,15 @@ defmodule OperaWeb.TasksLive do
     Enum.reduce(data_map, %{}, fn {k, v}, acc ->
       type = PS.get_type(k)
 
-      if type && type.type == :number do
-        Map.put(acc, k, String.to_integer(v))
-      else
-        Map.put(acc, k, v)
-      end
+      if type && type.type == :number,
+        do: Map.put(acc, k, String.to_integer(v)),
+        else: Map.put(acc, k, v)
     end)
   end
 
-  def get_business_key(input_map, key_list) do
-    values = Enum.map(key_list, &Map.get(input_map, &1))
-    Enum.reduce(values, &(&2 <> "-" <> &1))
+  def get_business_key(input_map, application) do
+    if application.bk_prefix == [],
+      do: application.process,
+      else: Enum.map(application.bk_prefix, &Map.get(input_map, &1)) |> Enum.reduce(&(&2 <> "-" <> &1))
   end
 end

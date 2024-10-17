@@ -1,4 +1,4 @@
-defmodule Opera.Processes.ObanTimerWorker do
+defmodule Opera.Workers.ObanTimerWorker do
   use Oban.Worker, queue: :default, max_attempts: 5
 
   alias Mozart.ProcessService

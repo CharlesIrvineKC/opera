@@ -13,7 +13,9 @@ defmodule OperaWeb.ProcessesLive do
         _ -> nil
       end
 
-    bpm_modules = Application.fetch_env!(:opera, :process_apps)
+    bpm_modules =
+      Application.fetch_env!(:opera, :process_apps) |> Enum.sort_by(fn {k, _v} -> k end)
+
     process_pids = Map.values(ProcessService.get_active_processes())
 
     active_processes =
