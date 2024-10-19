@@ -26,11 +26,27 @@ defmodule Opera.Processes.HomeLoanApp do
     )
 
     reroute_task "Pre-Approval Denied", condition: :pre_approval_declined do
-      user_task("Communicate Loan Denied", group: "Credit", outputs: "Communicate Loan Denied")
+      user_task("Communicate Loan Denied",
+        group: "Credit",
+        outputs: "Communicate Loan Denied",
+        documentation:
+          "Contact the loan applicant and inform them that the loan application has been declined."
+      )
     end
 
-    user_task("Receive Mortage Application", group: "Credit", outputs: "Purchase Price")
-    user_task("Process Loan", group: "Credit", outputs: "Loan Verified")
+    user_task("Receive Mortage Application",
+      group: "Credit",
+      outputs: "Purchase Price",
+      documentation: "Accept and route the loan application to the processing department."
+    )
+
+    user_task("Process Loan",
+      group: "Credit",
+      outputs: "Loan Verified",
+      documentation:
+        "Process the loan application documentation so that the application can be turned over to the underwriting deppartment."
+    )
+
     subprocess_task("Perform Loan Evaluation", process: "Perform Loan Evaluation Process")
   end
 
@@ -40,10 +56,12 @@ defmodule Opera.Processes.HomeLoanApp do
 
   defprocess "Perform Loan Evaluation Process" do
     reroute_task "Loan Failed Verification", condition: :loan_failed_verification do
-      user_task("Communicate Loan Denied", group: "Credit", outputs: "Communicate Loan Denied")
+      user_task("Communicate Loan Denied", group: "Credit", outputs: "Communicate Loan Denied",
+      documentation: "Communicate with the applicant to inform them that the loan has been declined.")
     end
 
-    user_task("Perform Underwriting", group: "Underwriting", outputs: "Loan Approved")
+    user_task("Perform Underwriting", group: "Underwriting", outputs: "Loan Approved",
+    documentation: "Perform home loan underwriting.")
     subprocess_task("Route from Underwriting", process: "Route from Underwriting Process")
   end
 
@@ -59,10 +77,12 @@ defmodule Opera.Processes.HomeLoanApp do
     reroute_task "Loan Declined", condition: :loan_declined do
       user_task("Communicate Loan Denied",
         group: "Customer Service",
-        outputs: "Communicate Loan Denied"
+        outputs: "Communicate Loan Denied",
+        documentation: "Communicate with the applicant to inform them that the loan has been declined."
       )
     end
 
-    user_task("Communicate Approval", group: "Credit", outputs: "Communicate Loan Approved")
+    user_task("Communicate Approval", group: "Credit", outputs: "Communicate Loan Approved",
+    documentation: "Commuicate to the loan applicant that the loan has been approved.")
   end
 end
