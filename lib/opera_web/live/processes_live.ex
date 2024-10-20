@@ -34,8 +34,50 @@ defmodule OperaWeb.ProcessesLive do
        active_processes: active_processes,
        completed_processes: completed_processes,
        process_state: process_state,
-       selected_process: selected_process
+       selected_process: selected_process,
+       messages: []
      )}
+  end
+
+  def messages(assigns) do
+    ~H"""
+    <div
+      :for={message <- @messages}
+      class="flex items-center p-4 text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
+    >
+      <svg
+        class="flex-shrink-0 w-4 h-4"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+      </svg>
+      <div class="ms-3 text-sm font-medium">
+        <%= message %>
+      </div>
+      <button
+        type="button"
+        phx-click="dismiss-message" phx-value-message={message}
+        class="ms-auto -mx-1.5 -my-1.5 bg-green-50 text-green-500 rounded-lg focus:ring-2 focus:ring-green-400 p-1.5 hover:bg-green-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700"
+      >
+        <svg
+          class="w-3 h-3"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 14 14"
+        >
+          <path
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+          />
+        </svg>
+      </button>
+    </div>
+    """
   end
 
   def render(assigns) do
@@ -47,6 +89,7 @@ defmodule OperaWeb.ProcessesLive do
       selected_process={@selected_process}
       process_state={@process_state}
     />
+    <.messages messages={@messages}/>
     <.control_panel process_state={@process_state} />
     <.active_process_instances
       active_processes={@active_processes}
@@ -339,10 +382,17 @@ defmodule OperaWeb.ProcessesLive do
     """
   end
 
+  def handle_event("dismiss-message", %{"message" => message}, socket) do
+    messages = socket.assigns.messages |> List.delete(message)
+    {:noreply, assign(socket, messages: messages)}
+  end
+
   def handle_event("load-application", %{"application" => module_name}, socket) do
     module = Module.concat(Elixir, String.to_atom(module_name))
     apply(module, :load, [])
-    {:noreply, socket}
+    message = "BPM Application #{module_name} successfully loaded."
+    new_messages = socket.assigns.messages |> List.insert_at(0, message)
+    {:noreply, assign(socket, messages: new_messages)}
   end
 
   def handle_event("clear-databases", _params, socket) do
