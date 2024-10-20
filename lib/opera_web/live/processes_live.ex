@@ -58,15 +58,11 @@ defmodule OperaWeb.ProcessesLive do
       </div>
       <button
         type="button"
-        phx-click="dismiss-message" phx-value-message={message}
+        phx-click="dismiss-message"
+        phx-value-message={message}
         class="ms-auto -mx-1.5 -my-1.5 bg-green-50 text-green-500 rounded-lg focus:ring-2 focus:ring-green-400 p-1.5 hover:bg-green-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700"
       >
-        <svg
-          class="w-3 h-3"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 14 14"
-        >
+        <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
           <path
             stroke="currentColor"
             stroke-linecap="round"
@@ -89,7 +85,7 @@ defmodule OperaWeb.ProcessesLive do
       selected_process={@selected_process}
       process_state={@process_state}
     />
-    <.messages messages={@messages}/>
+    <.messages messages={@messages} />
     <.control_panel process_state={@process_state} />
     <.active_process_instances
       active_processes={@active_processes}
@@ -208,7 +204,7 @@ defmodule OperaWeb.ProcessesLive do
               <li :for={{name, module} <- @bpm_modules}>
                 <a
                   phx-click={load_app()}
-                  phx-value-application={module}
+                  phx-value-application={name}
                   href="#"
                   class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                 >
@@ -388,9 +384,12 @@ defmodule OperaWeb.ProcessesLive do
   end
 
   def handle_event("load-application", %{"application" => module_name}, socket) do
-    module = Module.concat(Elixir, String.to_atom(module_name))
+    module =
+      Enum.find_value(socket.assigns.bpm_modules, fn {name, module} ->
+        if name == module_name, do: module
+      end)
     apply(module, :load, [])
-    message = "BPM Application #{module_name} successfully loaded."
+    message = "'#{module_name}' successfully loaded."
     new_messages = socket.assigns.messages |> List.insert_at(0, message)
     {:noreply, assign(socket, messages: new_messages)}
   end
