@@ -3,7 +3,7 @@ defmodule OperaWeb.OperaComponents do
 
   alias Mozart.ProcessService, as: PS
 
-  def is_html_safe (value) do
+  def is_html_safe(value) do
     case Phoenix.HTML.Safe.impl_for(value) do
       nil -> false
       _ -> true
@@ -17,6 +17,7 @@ defmodule OperaWeb.OperaComponents do
       else
         Map.put(assigns, :value, inspect(assigns.value))
       end
+
     ~H"""
     <div :if={@value} class="min-w-60">
       <label for="input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -36,9 +37,14 @@ defmodule OperaWeb.OperaComponents do
   def output_field(assigns) do
     type = PS.get_type(assigns.name)
     assigns = Map.put(assigns, :type, type)
+
     ~H"""
     <div>
-      <label for="output" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+      <label
+        :if={!@type || (@type && @type.type != :confirm)}
+        for="output"
+        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+      >
         <%= @name %>
       </label>
       <.string_output_field :if={!@type} name={@name} enabled={@enabled} value={@value} />
@@ -54,6 +60,30 @@ defmodule OperaWeb.OperaComponents do
         name={@name}
         value={@value}
       />
+      <.confirm_output_field
+        :if={@type && @type.type == :confirm}
+        enabled={@enabled}
+        name={@name}
+        value={@value}
+      />
+    </div>
+    """
+  end
+
+  def confirm_output_field(assigns) do
+    ~H"""
+    <div class="flex items-center">
+      <input
+        type="checkbox"
+        id={@name}
+        name={@name}
+        value="true"
+        required
+        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+      />
+      <label for={@name} class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+        <%= @name %>
+      </label>
     </div>
     """
   end

@@ -43,9 +43,19 @@ defmodule Opera.Processes.InvoiceReceipt do
     end
   end
 
+  def_confirm_type("Bank Transfer Prepared")
+  def_confirm_type("Invoice Archived")
+
   defprocess "Perform Bank Transfer" do
-    prototype_task("Prepare Bank Transfer")
-    prototype_task("Archive Invoice")
+    parallel_task "Post Approval Activities" do
+      route do
+        user_task("Prepare Bank Transfer", group: "Back Office", outputs: "Bank Transfer Prepared")
+      end
+
+      route do
+        user_task("Archive Invoice", group: "Back Office", outputs: "Invoice Archived")
+      end
+    end
   end
 
   defprocess "Perform Invoice Approval Negotiation" do
