@@ -12,12 +12,14 @@ config :opera,
   generators: [timestamp_type: :utc_datetime]
 
 config :opera, :process_apps, [
-  {"Process a Home Loan", Opera.Processes.HomeLoanApp},
+  {"Home Loan", Opera.Processes.HomeLoanApp},
   {"Prepare Bill", Opera.Processes.PrepareBillApp},
   {"Payment Approval", Opera.Processes.PaymentApprovalApp},
   {"Invoice Receipt", Opera.Processes.InvoiceReceipt},
   {"Send Invoices", Opera.Processes.SendInvoices},
-  {"Oban Timer Process", Opera.Processes.ObanTimerTaskProcess}
+  {"Oban Timer Process", Opera.Processes.ObanTimerTaskProcess},
+  {"Real Estate Showing", Opera.Processes.ShowRealEstate},
+  {"Send Showing Contact Info", Opera.Processes.ShowRealEstate}
 ]
 
 # Configures the endpoint

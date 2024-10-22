@@ -17,7 +17,7 @@ defmodule OperaWeb.ProcessLive do
       PS.get_open_tasks(selected_process)
       |> Enum.sort(&Timex.before?(&1.start_time, &2.start_time))
 
-    visible_task_types = [:user, :prototype, :service, :timer, :rule, :receive]
+    visible_task_types = [:user, :prototype, :service, :timer, :rule, :receive, :send]
 
     completed_tasks =
       selected_process.completed_tasks

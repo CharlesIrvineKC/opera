@@ -201,7 +201,7 @@ defmodule OperaWeb.ProcessesLive do
               class="py-2 text-sm text-gray-700 dark:text-gray-400"
               aria-labelledby="dropdownLargeButton"
             >
-              <li :for={{name, module} <- @bpm_modules}>
+              <li :for={{name, _module} <- @bpm_modules}>
                 <a
                   phx-click={load_app()}
                   phx-value-application={name}
