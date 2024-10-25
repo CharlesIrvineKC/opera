@@ -29,6 +29,9 @@ defmodule OperaWeb.TasksLive do
         assigned_to_me: false,
         assigned_to_my_groups: false,
         user: user,
+        show_notes: false,
+        show_new_note: false,
+        notes: [],
         users_groups: Admin.get_user_groups(user.email)
       )
 
@@ -38,7 +41,8 @@ defmodule OperaWeb.TasksLive do
   def handle_params(%{"task_uid" => task_uid}, _uri, socket) do
     user_tasks = socket.assigns.user_tasks
     current_task = Enum.find(user_tasks, &(&1.uid == task_uid))
-    {:noreply, assign(socket, current_task: current_task)}
+    notes = PS.get_process_notes(current_task.uid) |> IO.inspect()
+    {:noreply, assign(socket, current_task: current_task, notes: notes)}
   end
 
   def handle_params(_params, _uri, socket) do
@@ -74,7 +78,13 @@ defmodule OperaWeb.TasksLive do
           </.user_task_ref>
         </div>
         <div>
-          <.task_form current_task={@current_task} user={@user} />
+          <.task_form
+            current_task={@current_task}
+            user={@user}
+            show_notes={@show_notes}
+            show_new_note={@show_new_note}
+            notes={@notes}
+          />
           <.start_app_form current_app={@current_app} />
         </div>
       </div>
@@ -378,64 +388,184 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
+  def task_form_button_group(assigns) do
+    ~H"""
+    <div class="mb-4 flex justify-between">
+      <div>
+        <button
+          :if={@current_task.assigned_user == @user.email || @current_task.assigned_user == nil}
+          phx-click="toggle-claim"
+          phx-value-task-uid={@current_task.uid}
+          type="button"
+          class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          <%= if @current_task.assigned_user == @user.email, do: "Release", else: "Claim" %>
+        </button>
+        <button
+          type="button"
+          phx-click="toggle-notes"
+          class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          Notes
+        </button>
+        <button
+          type="button"
+          class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          <.link href={~p"/processes/#{@current_task.process_uid}/?process_state=active"}>
+            History
+          </.link>
+        </button>
+      </div>
+    </div>
+    """
+  end
+
+  def task_from_inputs_outputs(assigns) do
+    ~H"""
+    <div class="flex flex-row flex-wrap gap-6 mb-8">
+      <OC.input_field
+        :for={{name, value} <- FH.get_ordered_inputs(@current_task.module, @current_task.data)}
+        name={name}
+        value={value}
+      />
+    </div>
+    <div class="flex flex-row flex-wrap gap-6 mb-2">
+      <OC.output_field
+        :for={name <- @current_task.outputs}
+        name={name}
+        enabled={@current_task.assigned_user}
+        value=""
+      />
+    </div>
+    """
+  end
+
+  def task_form_header(assigns) do
+    ~H"""
+    <h3 class="text-2xl mb-2 font-bold dark:text-white">
+      <%= @current_task.name %> - <%= @current_task.top_level_process %>
+    </h3>
+    <h3 class="mb-5 dark:text-white">
+      <%= @current_task.business_key %>
+    </h3>
+    <h3 :if={Map.get(@current_task, :documentation)} class="mb-7 dark:text-white">
+      <%= Map.get(@current_task, :documentation) %>
+    </h3>
+    """
+  end
+
   def task_form(assigns) do
     ~H"""
-    <form :if={@current_task} phx-submit="complete_task">
-      <h3 class="text-2xl mb-2 font-bold dark:text-white">
-        <%= @current_task.name %> - <%= @current_task.top_level_process %>
-      </h3>
-      <h3 class="mb-5 dark:text-white">
-        <%= @current_task.business_key %>
-      </h3>
-      <h3 :if={Map.get(@current_task, :documentation)} class="mb-7 dark:text-white">
-        <%= Map.get(@current_task, :documentation) %>
-      </h3>
-      <div class="mb-4 flex justify-between">
-        <div>
-          <button
-            :if={@current_task.assigned_user == @user.email || @current_task.assigned_user == nil}
-            phx-click="toggle-claim"
-            phx-value-task-uid={@current_task.uid}
-            type="button"
-            class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            <%= if @current_task.assigned_user == @user.email, do: "Release", else: "Claim" %>
-          </button>
-          <button
-            type="button"
-            class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            <.link href={~p"/processes/#{@current_task.process_uid}/?process_state=active"}>
-              History
-            </.link>
-          </button>
-        </div>
-      </div>
-      <div class="flex flex-row flex-wrap gap-6 mb-8">
-        <OC.input_field
-          :for={{name, value} <- FH.get_ordered_inputs(@current_task.module, @current_task.data)}
-          name={name}
-          value={value}
-        />
-      </div>
-      <div class="flex flex-row flex-wrap gap-6 mb-8">
-        <OC.output_field
-          :for={name <- @current_task.outputs}
-          name={name}
-          enabled={@current_task.assigned_user}
-          value=""
-        />
-      </div>
-      <div :if={@current_task.assigned_user == @user.email} class="flex gap-2 flex-row">
+    <div :if={@current_task}>
+      <form phx-submit="complete_task">
+        <.task_form_header current_task={@current_task} />
+        <.task_form_button_group current_task={@current_task} user={@user} />
+        <.task_from_inputs_outputs current_task={@current_task} />
         <button
+          :if={@current_task.assigned_user == @user.email}
           type="submit"
           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         >
           Submit
         </button>
-      </div>
-    </form>
+      </form>
+      <.notes_panel :if={@show_notes} show_new_note={@show_new_note} notes={@notes} />
+    </div>
     """
+  end
+
+  def notes_panel(assigns) do
+    ~H"""
+    <div class="my-4">
+      <div class="mr-6 flex flex-row justify-between">
+        <h4 class="text-2xl font-bold dark:text-white">Notes</h4>
+        <a
+          :if={!@show_new_note}
+          href="#"
+          phx-click="toggle-new-note"
+          class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+        >
+          New Note
+        </a>
+      </div>
+      <form :if={@show_new_note} phx-submit="save-note" class="my-4">
+        <textarea
+          id="note"
+          name="note"
+          rows="4"
+          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          placeholder="Leave a note..."
+        ></textarea>
+
+        <div class="my-4 flex justify-between">
+          <div>
+            <button
+              type="submit"
+              class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              phx-click="cancel-new-note"
+              class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+      <div class="my-4 flex flex-col gap-4">
+        <.note :for={note <- Map.values(@notes)} :if={@notes != %{}} note={note} />
+      </div>
+    </div>
+    """
+  end
+
+  def note(assigns) do
+    ~H"""
+    <div class="flex flex-row gap-4 justify-between mr-8">
+      <div class="w-full pt-1 pb-2 px-2 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+        <div class="flex flex-row justify-between text-sm mb-4">
+          <span><%= @note.author %></span>
+          <span><%= Timex.format!(@note.timestamp, "{0M} / {D} / {YYYY} - {h24}:{m}") %></span>
+        </div>
+        <p class="font-normal text-gray-700 dark:text-gray-400">
+          <%= @note.text %>
+        </p>
+      </div>
+      <div class="flex flex-col">
+        <button
+          type="button"
+          class="mb-2 px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          class="px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+    """
+  end
+
+  def handle_event("cancel-new-note", _params, socket) do
+    {:noreply, assign(socket, show_new_note: false)}
+  end
+
+  def handle_event("save-note", %{"note" => note_text}, socket) do
+    author_id = socket.assigns.user.email
+    user_task_id = socket.assigns.current_task.uid
+    PS.add_process_note(user_task_id, author_id, note_text) |> IO.inspect(label: "** note **")
+    {:noreply, assign(socket, show_notes: false, show_new_note: false)}
+  end
+
+  def handle_event("toggle-new-note", _params, socket) do
+    {:noreply, assign(socket, show_new_note: !socket.assigns.show_new_note)}
   end
 
   def start_app_form(assigns) do
@@ -463,6 +593,10 @@ defmodule OperaWeb.TasksLive do
 
   def handle_event("toggle-assigned-to-me", _params, socket) do
     {:noreply, assign(socket, :assigned_to_me, !socket.assigns.assigned_to_me)}
+  end
+
+  def handle_event("toggle-notes", params, socket) do
+    {:noreply, assign(socket, show_notes: !socket.assigns.show_notes)}
   end
 
   def handle_event("toggle-assigned-to-my-groups", _params, socket) do
@@ -589,6 +723,8 @@ defmodule OperaWeb.TasksLive do
   def get_business_key(input_map, application) do
     if application.bk_prefix == [],
       do: application.process,
-      else: Enum.map(application.bk_prefix, &Map.get(input_map, &1)) |> Enum.reduce(&(&2 <> "-" <> &1))
+      else:
+        Enum.map(application.bk_prefix, &Map.get(input_map, &1))
+        |> Enum.reduce(&(&2 <> "-" <> &1))
   end
 end
