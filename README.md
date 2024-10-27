@@ -2,10 +2,10 @@
 
 ## Introduction
 
-**Opera** is a **proof of concept** user interface application to be used with [Mozart - a BPM platform written using Elixir](https://github.com/CharlesIrvineKC/mozart). It's purpose is to provide a concrete example of a Business Process Management (BPM) application driven by Mozart. You should find it useful for the following:
+**Opera** is a **proof of concept** user interface application to be used with [Mozart - a BPM platform written using Elixir](https://github.com/CharlesIrvineKC/mozart). It is implemented using **Phoenix LiveView**. It's purpose is to provide a concrete example of a Business Process Management (BPM) application driven by Mozart. You should find it useful for the following:
 
 * Help those new to BPM understand its purpose and how it works.
-* Help you understand the capabilities of Mozart.
+* Help you understand the capabilities and services of Mozart.
 * Executing your Mozart busines process models.
 * Provide a baseline application that could be extended to have production quality and functionality.
 * As an example to guide you in the development of your own Mozart related GUIs.
@@ -52,7 +52,7 @@ After the server comes up, navigate to:
 http://localhost
 ```
 
-You should see a very rudimentary welcome screen where you can register and login. Use any email address and password you would like. Email addresses aren't verified.
+You should see a very rudimentary welcome screen where you can register and login. Use any email address and password you would like to register. Email addresses aren't verified.
 
 After you register and login, you can navigate to either of three views - the **processes view**, the **tasks view** or the **users** view. We'll talk about the process view first.
 

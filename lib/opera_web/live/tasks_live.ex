@@ -23,6 +23,7 @@ defmodule OperaWeb.TasksLive do
         bpm_applications: bpm_applications,
         current_app: nil,
         current_task: nil,
+        current_note: nil,
         filtered_app: nil,
         filtered_groups: [],
         all_groups: all_groups,
@@ -30,7 +31,7 @@ defmodule OperaWeb.TasksLive do
         assigned_to_my_groups: false,
         user: user,
         show_notes: false,
-        show_new_note: false,
+        edit_mode: nil,
         notes: [],
         users_groups: Admin.get_user_groups(user.email)
       )
@@ -41,7 +42,7 @@ defmodule OperaWeb.TasksLive do
   def handle_params(%{"task_uid" => task_uid}, _uri, socket) do
     user_tasks = socket.assigns.user_tasks
     current_task = Enum.find(user_tasks, &(&1.uid == task_uid))
-    notes = PS.get_process_notes(current_task.uid) |> IO.inspect()
+    notes = PS.get_process_notes(current_task.uid)
     {:noreply, assign(socket, current_task: current_task, notes: notes)}
   end
 
@@ -80,9 +81,10 @@ defmodule OperaWeb.TasksLive do
         <div>
           <.task_form
             current_task={@current_task}
+            current_note={@current_note}
             user={@user}
             show_notes={@show_notes}
-            show_new_note={@show_new_note}
+            edit_mode={@edit_mode}
             notes={@notes}
           />
           <.start_app_form current_app={@current_app} />
@@ -470,7 +472,12 @@ defmodule OperaWeb.TasksLive do
           Submit
         </button>
       </form>
-      <.notes_panel :if={@show_notes} show_new_note={@show_new_note} notes={@notes} />
+      <.notes_panel
+        :if={@show_notes}
+        edit_mode={@edit_mode}
+        notes={@notes}
+        current_note={@current_note}
+      />
     </div>
     """
   end
@@ -481,7 +488,7 @@ defmodule OperaWeb.TasksLive do
       <div class="mr-6 flex flex-row justify-between">
         <h4 class="text-2xl font-bold dark:text-white">Notes</h4>
         <a
-          :if={!@show_new_note}
+          :if={!@edit_mode}
           href="#"
           phx-click="toggle-new-note"
           class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
@@ -489,14 +496,14 @@ defmodule OperaWeb.TasksLive do
           New Note
         </a>
       </div>
-      <form :if={@show_new_note} phx-submit="save-note" class="my-4">
+      <form :if={@edit_mode} phx-submit="save-note" class="my-4">
         <textarea
           id="note"
           name="note"
           rows="4"
           class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           placeholder="Leave a note..."
-        ></textarea>
+        ><%= if @current_note, do: @current_note.text, else: "" %></textarea>
 
         <div class="my-4 flex justify-between">
           <div>
@@ -508,7 +515,7 @@ defmodule OperaWeb.TasksLive do
             </button>
             <button
               type="button"
-              phx-click="cancel-new-note"
+              phx-click="cancel-note-edit"
               class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
             >
               Cancel
@@ -538,12 +545,16 @@ defmodule OperaWeb.TasksLive do
       <div class="flex flex-col">
         <button
           type="button"
+          phx-click="edit-note"
+          phx-value-note-uid={@note.uid}
           class="mb-2 px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         >
           Edit
         </button>
         <button
           type="button"
+          phx-click="delete-note"
+          phx-value-note-uid={@note.uid}
           class="px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         >
           Delete
@@ -551,21 +562,6 @@ defmodule OperaWeb.TasksLive do
       </div>
     </div>
     """
-  end
-
-  def handle_event("cancel-new-note", _params, socket) do
-    {:noreply, assign(socket, show_new_note: false)}
-  end
-
-  def handle_event("save-note", %{"note" => note_text}, socket) do
-    author_id = socket.assigns.user.email
-    user_task_id = socket.assigns.current_task.uid
-    PS.add_process_note(user_task_id, author_id, note_text) |> IO.inspect(label: "** note **")
-    {:noreply, assign(socket, show_notes: false, show_new_note: false)}
-  end
-
-  def handle_event("toggle-new-note", _params, socket) do
-    {:noreply, assign(socket, show_new_note: !socket.assigns.show_new_note)}
   end
 
   def start_app_form(assigns) do
@@ -591,11 +587,54 @@ defmodule OperaWeb.TasksLive do
     """
   end
 
+  def handle_event("delete-note", %{"note-uid" => note_uid}, socket) do
+    current_task = socket.assigns.current_task
+    current_note = socket.assigns.notes |> Map.get(note_uid)
+    PS.delete_process_note(current_task.uid, current_note)
+    notes = socket.assigns.notes |> Map.delete(note_uid)
+    {:noreply, assign(socket, edit_mode: nil, current_note: nil, notes: notes)}
+  end
+
+  def handle_event("edit-note", %{"note-uid" => note_uid}, socket) do
+    current_note = socket.assigns.notes |> Map.get(note_uid)
+    {:noreply, assign(socket, edit_mode: :edit, current_note: current_note)}
+  end
+
+  def handle_event("cancel-note-edit", _params, socket) do
+    {:noreply, assign(socket, edit_mode: nil)}
+  end
+
+  def handle_event("save-note", %{"note" => note_text}, socket) do
+    edit_mode = socket.assigns.edit_mode
+
+    note =
+      cond do
+        edit_mode == :new ->
+          author_id = socket.assigns.user.email
+          user_task_id = socket.assigns.current_task.uid
+          PS.add_process_note(user_task_id, author_id, note_text)
+
+        edit_mode == :edit ->
+          current_task = socket.assigns.current_task
+          note = %{socket.assigns.current_note | text: note_text}
+          PS.update_process_note(current_task.uid, note)
+      end
+
+    notes = socket.assigns.notes |> Map.put(note.uid, note)
+
+    {:noreply, assign(socket, edit_mode: nil, notes: notes)}
+  end
+
+  def handle_event("toggle-new-note", _params, socket) do
+    edit_mode = if socket.assigns.edit_mode == nil, do: :new, else: :edit
+    {:noreply, assign(socket, edit_mode: edit_mode)}
+  end
+
   def handle_event("toggle-assigned-to-me", _params, socket) do
     {:noreply, assign(socket, :assigned_to_me, !socket.assigns.assigned_to_me)}
   end
 
-  def handle_event("toggle-notes", params, socket) do
+  def handle_event("toggle-notes", _params, socket) do
     {:noreply, assign(socket, show_notes: !socket.assigns.show_notes)}
   end
 
@@ -685,7 +724,23 @@ defmodule OperaWeb.TasksLive do
     Process.sleep(100)
     user_tasks = PS.get_user_tasks()
     current_task = Enum.find(user_tasks, fn t -> t.business_key == business_key end)
-    {:noreply, assign(socket, user_tasks: user_tasks, current_task: current_task)}
+    notes = if current_task, do: PS.get_process_notes(current_task.uid), else: []
+
+    socket =
+      assign(socket,
+        user_tasks: user_tasks,
+        current_task: current_task,
+        show_notes: false,
+        edit_mode: nil,
+        notes: notes
+      )
+
+    if current_task do
+      socket = assign(socket, current_task: current_task)
+      {:noreply, push_patch(socket, to: ~p"/tasks/#{current_task.uid}")}
+    else
+      {:noreply, push_patch(socket, to: ~p"/tasks")}
+    end
   end
 
   def handle_event("start_app", data, socket) do
