@@ -262,11 +262,11 @@ defmodule OperaWeb.ProcessesLive do
           >
             <li>
               <a
-                phx-click="clear-databases"
+                phx-click="clear_all_state"
                 href="#"
                 class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
-                Clear Databases
+                Clear All State
               </a>
             </li>
           </ul>
@@ -394,7 +394,7 @@ defmodule OperaWeb.ProcessesLive do
     {:noreply, assign(socket, messages: new_messages)}
   end
 
-  def handle_event("clear-databases", _params, socket) do
+  def handle_event("clear_all_state", _params, socket) do
     ProcessService.clear_state()
     {:noreply, redirect(socket, to: ~p"/processes")}
   end
