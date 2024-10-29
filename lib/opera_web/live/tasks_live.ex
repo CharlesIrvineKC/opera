@@ -755,7 +755,8 @@ defmodule OperaWeb.TasksLive do
     PE.execute(ppid)
     Process.sleep(100)
     user_tasks = PS.get_user_tasks()
-    {:noreply, assign(socket, user_tasks: user_tasks, current_task: nil, current_app: nil)}
+    current_task = Enum.find(user_tasks, fn t -> t.business_key == business_key end)
+    {:noreply, assign(socket, user_tasks: user_tasks, current_task: current_task, current_app: nil)}
   end
 
   def handle_event("set_current_app", %{"app-name" => application_name}, socket) do
