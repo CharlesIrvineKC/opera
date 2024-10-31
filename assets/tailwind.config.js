@@ -6,6 +6,7 @@ const fs = require("fs")
 const path = require("path")
 
 module.exports = {
+  darkMode: 'class',
   content: [
     "./js/**/*.js",
     "../lib/opera_web.ex",
