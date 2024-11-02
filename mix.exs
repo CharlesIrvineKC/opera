@@ -62,7 +62,7 @@ defmodule Opera.MixProject do
       {:timex, "~> 3.7"},
       {:oban, "~> 2.18"},
       # {:mozart, path: "../mozart"},
-      {:mozart, "~> 1.0.0"}
+      {:mozart, "~> 1.0.1"}
     ]
   end
 
